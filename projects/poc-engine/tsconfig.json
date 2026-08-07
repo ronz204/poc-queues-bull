@@ -39,6 +39,9 @@
 
     // Module resolution - Support for absolute imports
     "paths": {
+      "@env": ["./source/cmd/env.schema.ts"],
+      "@deps": ["./source/cmd/deps.wiring.ts"],
+
       "@customs/*": ["./drizzle/customs/*"],
       "@database/*": ["./drizzle/database/*"],
       "@elements/*": ["./drizzle/elements/*"],
