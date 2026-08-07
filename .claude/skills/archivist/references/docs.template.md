@@ -1,9 +1,9 @@
 <!--
 Template for a curated reference doc — a self-contained engineering-reference
-file living wherever this project keeps its docs (see SKILL.md Step 1 for how
-to find that location). Fill every section; delete guidance comments (the
-ones like this) before presenting the draft. Keep the file to ~100-200 lines
-— a section growing past that belongs in a more specific file.
+file living under `.claude/docs/<topic>.md`. Fill every section; delete
+guidance comments (the ones like this) before presenting the draft. Keep the
+file to ~100-200 lines — a section growing past that belongs in a more
+specific file.
 -->
 
 # <Subject> — <One-word framing, e.g. "Overview" / "Architecture" / "Provisioning">

@@ -1,15 +1,17 @@
 <!--
-Template AND methodology for <topic>.spec.md — this file is self-contained on
-purpose: it is the only place Swampert's spec-driven-development convention
-lives, so read it in full before writing or updating a spec, don't assume the
-shape from memory or from a similar file in another project.
+Template AND methodology for <slice>.spec.md — this file is self-contained on
+purpose: it is the only place this project's spec-driven-development
+convention lives, so read it in full before writing or updating a spec,
+don't assume the shape from memory or from a similar file in another
+project.
 
 WHAT A SPEC IS HERE
-A `<topic>.spec.md` names one cohesive slice of the system (a component, a
-layer, a flow — e.g. `drizzle-db.spec.md`, `dashboard.spec.md`), not a batch
-of tasks for a given day. There is no fixed location and no single canonical
-file — Glob `**/*.spec.md` before assuming one doesn't already exist for the
-topic at hand.
+A `<slice>.spec.md` names one cohesive slice of a project (a component, a
+layer, a flow), not a batch of tasks for a given day. It lives as a flat
+file directly under that project's own `deltas/` directory — e.g.
+`projects/poc-engine/deltas/<slice>.spec.md` — never a per-slice subfolder.
+Glob `projects/*/deltas/*.spec.md` before assuming one doesn't already exist
+for the topic at hand.
 
 LIVING, NOT ONE-SHOT
 A spec is not a disposable pre-implementation plan. It is never closed,
@@ -23,11 +25,14 @@ NO history/ FOLDER
 This is deliberate: if the reason for a change matters, it gets written into
 the relevant section of the spec itself at the moment of editing — there is
 no separate append-only decision log and no per-slice folder structure.
-Simpler is correct at this project's size; don't reintroduce one.
+Simpler is correct at this project's size; don't reintroduce one. A slice
+that needs free-form theory/context beyond this living-contract shape gets
+an optional sibling `<slice>.docs.md` instead (see SKILL.md Step 4) — that
+file has no template and is not a decision log either.
 
 HOW CLAUDE SHOULD USE THIS
 - Before implementing anything non-trivial, check whether a `*.spec.md`
-  already exists for that topic. If it does, edit it in place to reflect the
+  already exists for that slice. If it does, edit it in place to reflect the
   new reality — never create a second spec for the same slice, and never
   reinterpret its scope without updating the document itself.
 - If the work is non-trivial and no spec exists yet, propose writing one
@@ -44,7 +49,7 @@ Fill every section below; delete this guidance comment before presenting the
 draft.
 -->
 
-# <Topic> — Spec
+# <Slice> — Spec
 
 ## Objective
 
