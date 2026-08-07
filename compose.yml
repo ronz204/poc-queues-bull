@@ -1,10 +1,15 @@
 name: bullky
 
 include:
+  # infrastructure services
+  - ./services/postgresql/compose.yml
   - ./services/redis-cache/compose.yml
   - ./services/redis-queue/compose.yml
 
 volumes:
+  bullky-db-data:
+    driver: local
+    name: bullky-db-data
   bullky-cache-data:
     driver: local
     name: bullky-cache-data
