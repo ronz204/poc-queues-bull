@@ -26,7 +26,7 @@ Maintained via the `archivist` skill: every claim is checked against the actual 
 | `.claude/docs/overview.md` | What Cascade is and why the domain (not a "feature demo") serves the learning goal, the phase-0–7 roadmap, explicit non-goals, design principles | Confirming whether something is in scope for the current phase, or why a domain decision was made a certain way |
 | `.claude/docs/modules.md` | Cross-cutting BullMQ requirements (queue/worker definition, job reliability, throughput control, observability, process lifecycle) plus the Order Processing module's flow, sub-flows, and an integration/risk summary by phase | Implementing or reviewing any queue, job, or worker behavior |
 | `.claude/docs/structure.md` | The two-entrypoint (`api`/`worker`) architectural decision, service map, stack + rationale, the queue/background-job pattern, environments and configuration | Backend, infra, queue, or cross-process changes |
-| `.claude/docs/database.md` | Postgres schema design for `orders`/`order_events` — columns, enums, indexes, what was deliberately left out, open questions. Target shape only; no migration has created these tables yet | Writing the first Drizzle schema/migration, or any schema change afterward |
+| `.claude/docs/database.md` | Postgres schema design for `orders`/`order_events` — columns, enums, indexes, what was deliberately left out, open questions. Both tables are migrated | Writing a Drizzle schema/migration change |
 
 ### `.claude/rules/` — conventions applied automatically
 

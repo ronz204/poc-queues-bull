@@ -99,9 +99,9 @@ A second Redis instance (`redis-cache`) is provisioned alongside the queue Redis
 
 ---
 
-## Database schema (planned)
+## Database schema
 
-Not yet implemented — no tables exist in the repo yet. This describes the target shape, kept deliberately small since the rich state lives in BullMQ/Redis while a job is in flight:
+Already migrated. Kept deliberately small since the rich state lives in BullMQ/Redis while a job is in flight:
 
 - **`orders`**: `id`, `status` (`pending` / `processing` / `completed` / `failed` / `cancelled`), `payload` (jsonb), `created_at`, `updated_at`.
 - **`order_events`**: append-only log of state transitions per order (`order_id`, `event_type`, `detail` jsonb, `created_at`) — queried to reconstruct "what happened" to an order without going to Redis; a simplified equivalent of an audit trail.

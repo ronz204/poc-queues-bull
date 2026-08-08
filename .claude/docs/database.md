@@ -1,8 +1,10 @@
 # Cascade — Database Design
 
-Design reference for Cascade's Postgres schema. Two tables total, covering the full domain of this POC — a single `public` schema. Not yet implemented: this describes the target shape, no migration has created these tables yet.
+Design reference for Cascade's Postgres schema. Two tables total, covering the full domain of this POC, under a dedicated `core` schema rather than `public` — kept separate so this POC's tables are never mixed with whatever else might live in the database's default schema.
 
 `orders` is the source of truth for the order's **current state**. `order_events` is the log of **how it got there** — queried to reconstruct an order's history without going to Redis/BullMQ, which only holds the job while it's in flight. `order_events.order_id` references `orders.id` with `ON DELETE CASCADE` — an event is meaningless without its order.
+
+Both tables are already migrated and match the shape described below.
 
 ---
 
