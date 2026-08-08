@@ -45,6 +45,9 @@
       "@customs/*": ["./drizzle/customs/*"],
       "@database/*": ["./drizzle/database/*"],
       "@elements/*": ["./drizzle/elements/*"],
+
+      "@plugins/*": ["./source/infra/plugins/*"],
+      "@queues/*": ["./source/infra/queues/*"],
     },
   },
 }
