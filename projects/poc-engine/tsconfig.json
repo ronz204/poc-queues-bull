@@ -48,6 +48,10 @@
 
       "@plugins/*": ["./source/infra/plugins/*"],
       "@queues/*": ["./source/infra/queues/*"],
+      "@http/*": ["./source/infra/http/*"],
+
+      "@core/*": ["./source/core/*"],
+      "@app/*": ["./source/app/*"],
     },
   },
 }
