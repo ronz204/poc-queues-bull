@@ -22,7 +22,7 @@ const envSchema = z.object({
   POSTGRES_PASSWORD: z.string().min(1),
 
   // ==========================================
-  // Security
+  // CORS
   // ==========================================
   CORS_ORIGIN: z.string()
     .transform((val) => val.split(",").map((origin) => origin.trim()))
