@@ -12,8 +12,10 @@ paths:
 
 <!--
 One short paragraph: what this covers, what runtime/toolchain it targets, and
-what's explicitly out of scope for now. Omit the `paths:` frontmatter entirely
-only if this rule is meant to be global (rare).
+what's explicitly out of scope for now (library-specific conventions not yet
+decided, forward-looking vs. descriptive-of-current-code, etc). Omit the
+`paths:` frontmatter entirely only if this rule is meant to be global (rare —
+today only coding.md is global).
 -->
 
 ---

@@ -1,9 +1,7 @@
 <!--
-Template for a curated reference doc — a self-contained engineering-reference
-file living under `.claude/docs/<topic>.md`. Fill every section; delete
-guidance comments (the ones like this) before presenting the draft. Keep the
-file to ~100-200 lines — a section growing past that belongs in a more
-specific file.
+Template for .claude/docs/*.md — a self-contained engineering-reference file.
+Fill every section; delete guidance comments (the ones like this) before presenting the draft.
+Keep the file to ~100-200 lines — a section growing past that belongs in a more specific file.
 -->
 
 # <Subject> — <One-word framing, e.g. "Overview" / "Architecture" / "Provisioning">
@@ -15,11 +13,10 @@ specific file.
 ## <First section>
 
 <!--
-Plain section headers, no emoji, unless this project's existing docs already
-use them. Use a table wherever you're comparing options, stack choices with
-rationale, or a risk/complexity summary. Use a fenced code block for anything
-that is SQL, JSON, config, or a diagram — never describe a schema/query/
-topology in prose when a code block can say it exactly.
+Plain section headers, no emoji. Use a table wherever you're comparing options,
+stack choices with rationale, or a risk/complexity summary. Use a fenced code
+block for anything that is SQL, JSON, config, or a diagram — never describe a
+schema/query/topology in prose when a code block can say it exactly.
 -->
 
 ## <Next section>

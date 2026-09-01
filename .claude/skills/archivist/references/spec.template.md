@@ -1,84 +1,65 @@
 <!--
-Template AND methodology for <slice>.spec.md — this file is self-contained on
-purpose: it is the only place this project's spec-driven-development
-convention lives, so read it in full before writing or updating a spec,
-don't assume the shape from memory or from a similar file in another
-project.
-
-WHAT A SPEC IS HERE
-A `<slice>.spec.md` names one cohesive slice of a project (a component, a
-layer, a flow), not a batch of tasks for a given day. It lives as a flat
-file directly under that project's own `deltas/` directory — e.g.
-`projects/poc-engine/deltas/<slice>.spec.md` — never a per-slice subfolder.
-Glob `projects/*/deltas/*.spec.md` before assuming one doesn't already exist
-for the topic at hand.
-
-LIVING, NOT ONE-SHOT
-A spec is not a disposable pre-implementation plan. It is never closed,
-deleted, or replaced once the first implementation lands — it keeps being
-edited in place every time that slice's reality changes (a new case, a
-changed validation, a discovered edge case). A spec always describes the
-*current* contract and state of that slice, never a snapshot of what was
-once planned.
-
-NO history/ FOLDER
-This is deliberate: if the reason for a change matters, it gets written into
-the relevant section of the spec itself at the moment of editing — there is
-no separate append-only decision log and no per-slice folder structure.
-Simpler is correct at this project's size; don't reintroduce one. A slice
-that needs free-form theory/context beyond this living-contract shape gets
-an optional sibling `<slice>.docs.md` instead (see SKILL.md Step 4) — that
-file has no template and is not a decision log either.
-
-HOW CLAUDE SHOULD USE THIS
-- Before implementing anything non-trivial, check whether a `*.spec.md`
-  already exists for that slice. If it does, edit it in place to reflect the
-  new reality — never create a second spec for the same slice, and never
-  reinterpret its scope without updating the document itself.
-- If the work is non-trivial and no spec exists yet, propose writing one
-  using the 8 sections below before touching code.
-- Don't skip sections to move faster. The template is expensive to write on
-  purpose — the cost of specifying up front is there to avoid the larger
-  cost of discovering the real scope mid-implementation.
-- This coexists with — doesn't replace — Claude Code's own Plan mode. Use
-  Plan mode for exploratory work where it's still unclear what will be
-  built; use this template once a slice is defined enough to specify in
-  writing.
-
-Fill every section below; delete this guidance comment before presenting the
-draft.
+Template for services/<service>/deltas/<slice>.spec.md — the living, current
+contract for one project slice/capability's LOGIC layer (data, rules,
+invariants). A slice with a UI-facing surface has a presentation-layer
+counterpart, <slice>.design.md (own template, references/design.template.md)
+— don't fold layout/states/interactions in here, and don't duplicate an
+invariant stated here inside that file either; it should reference this one.
+Edited in place as the slice evolves — this file is always the current
+truth, not a log of how it got there. No append-only history is kept
+alongside it; if a decision needs theory/context beyond what the contract
+shape below holds, that goes in the optional Context section at the end
+(free-form, no fixed skeleton), never in a decision-log entry.
+Fill every section; delete guidance comments before presenting the draft.
+Ground every claim in the actual source implementing the slice — never write
+this from memory, from a description alone, or from an older doc's claim.
 -->
 
-# <Slice> — Spec
+# <Slice name> — Spec
 
-## Objective
+> <One line: what this slice is responsible for.>
 
-<!-- One sentence: the observable result/contract, not the activity. "X validates Y and fails with Z when W", not "work on X". If the objective can be written as a list of sub-tasks, it's not an objective yet — it's a plan disguised as one. -->
+## Intent
+
+<!-- Why this slice exists, in the domain's own vocabulary — not an implementation summary. -->
 
 ## Scope
 
-<!-- What's in today. Then, explicitly, what's out — naming what's deferred and why it's safe to defer is what keeps the spec from being silently assumed to cover something it doesn't. -->
+<!-- What this slice owns. Then explicit non-goals — a boundary that's easy to violate by accident earns a line here. -->
 
-## Technical context
+## Contract
 
-<!-- What already exists that this slice touches or depends on: concrete files, prior decisions, related docs. Enough that someone with no memory of this conversation could act on the spec without re-exploring the project from scratch. -->
+<!--
+The concrete shape a caller/reader can rely on: what's configured/enabled and
+why, inputs/outputs, behavior guarantees. Prefer a table or fenced code block
+over prose wherever the shape is structural (config keys, request/response
+fields, a permission matrix).
+-->
 
-## Implementation
+## Invariants
 
-<!-- Concrete steps, files to create/touch, in order. Not full pseudocode, but specific enough that the sequence of decisions is already made before the editor opens. -->
+<!-- What must always hold regardless of implementation changes — the things a future change to this slice must never break. This is usually the highest-value section: it's what actually gets checked later. -->
 
-## Config / secrets
+## Deferred / Open questions
 
-<!-- New or affected environment variables / credentials, and where their expected value comes from. Omit this section entirely if genuinely not applicable — don't leave it as a stub. -->
+<!-- Decisions intentionally not made yet, and what would trigger making them. An honest open question is a valid entry — don't force a premature decision just to fill this section. -->
 
 ## Acceptance criteria
 
-<!-- Binary checklist (`- [ ]`). Each item must be markable yes/no without judgment. If an item needs interpretation to know whether it passed, it isn't written precisely enough yet. Because the spec is living, these get checked and unchecked as the slice's real state changes — they are not frozen at authoring time. -->
+<!-- How to verify this spec is satisfied: specific tests, or a concrete manual check, or both. If this can't be falsified by reading the resulting code/behavior, it isn't specific enough yet. -->
 
-## How to test
+## Context (optional)
 
-<!-- The exact command or manual flow to verify — not "test the feature", but the exact call/request, with what input, and what the expected output or error is. -->
+<!--
+Omit this section entirely for the common case. Include it only when the
+slice needs domain background or mechanism explanation that doesn't fit any
+section above — free-form (a table here, a diagram there, a couple of
+paragraphs), not a fixed skeleton like the rest of this file. Never a
+decision log ("we changed X because Y", superseded-decision narratives,
+timestamps) — fold decision-shaped content into the sections above as
+current state instead, or leave it out.
+-->
 
-## Risks / edge cases
+---
 
-<!-- What could fail silently if not thought through now: implicit decisions worth making explicit, edge-case inputs, interactions with existing behavior, performance/volume concerns. -->
+Last updated: <date>.
