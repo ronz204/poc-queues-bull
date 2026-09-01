@@ -1,121 +1,51 @@
-# Cascade — Structure
+# Motor de Reportes Analíticos — Structure
 
-How the system is put together in practice: processes, data flow, queues, state storage, and configuration.
-
----
-
-## Core architectural decision: one monolith, two entrypoints
-
-Cascade isn't microservices, not even in spirit. It's **one codebase** with **two processes**: `api` and `worker`. Both share the same domain code (types, Postgres access, queue definitions) — only the entrypoint that gets run differs.
-
-This split exists for one specific reason, and it's the actual point of the whole learning exercise: **the real decoupling between "receive the request" and "process the work" goes through Redis, not through being in the same process.** If the API and the worker ran in a single process, it would be possible to cheat (e.g. call the processor function directly) and lose the exact part this POC exists to teach.
-
-It wasn't adopted as an architectural dogma — it's the simplest way to simulate, on a laptop, the real topology of a production system (N API replicas, M worker replicas, scaled independently).
+System architecture, stack choices, and cross-cutting patterns. Domain vision lives in `overview.md`; the build sequence lives in `approach.md`; mechanism explanations live in `expertise.md`.
 
 ---
 
-## Service map
+## Architecture
 
-```
-                       ┌─────────────┐
-                       │ HTTP client │
-                       └─────────────┘
-                              │ HTTP
-                              ▼
-                       ┌─────────────┐
-                       │ cascade-api │
-                       │ (Elysia)    │
-                       └─────────────┘
-                              │ enqueues job
-                              ▼
-                      ┌───────────────┐
-                      │ Redis (queue) │
-                      │ BullMQ jobs   │
-                      └───────────────┘
-                              │
-                              ▼
-                    ┌───────────────────┐
-                    │ cascade-worker    │
-                    │ process-order     │
-                    │ send-notification │
-                    │ failed-orders     │
-                    └───────────────────┘
-                              │ simulated
-                              ▼
-                   ┌─────────────────────┐
-                   │ "external services" │
-                   │ charge-payment      │
-                   │ reserve-inventory   │
-                   │ send-email          │
-                   └─────────────────────┘
-```
+The system follows Hexagonal Architecture combined with DDD tactical patterns:
 
-**Communication principle:** there's no real external service anywhere. The "external services" in the diagram are fake functions inside `cascade-worker` itself that simulate latency and random failure, so retry/backoff/DLQ behavior can be forced without depending on anything outside the laptop.
+- **Domain layer** — owns business rules; has no dependency on any infrastructure library.
+  - The report definition aggregate root: its invariants are a valid cron expression, a version that only ever increases, and no two active definitions sharing a name.
+  - The report execution entity: one concrete run of a report definition.
+  - The report snapshot value object: the computed result of one execution.
+  - Domain events: one raised when a report definition changes, one when a report execution completes successfully, one when a report execution fails.
+- **Application layer** — use cases that orchestrate repositories and domain services through ports; contains no business logic of its own. Core use cases: creating a report definition, recalculating a report, and getting a report's current result.
+- **Ports** — interfaces the application layer depends on, each with exactly one infrastructure implementation: a report-definition repository, a report-snapshot cache, a distributed lock, and a job scheduler.
+- **Adapters** — the only layer allowed to import a concrete infrastructure library: the persistence adapter, the cache/lock adapter, the job-queue adapter, and the REST API layer.
+- **Internal event bus** — connects aggregate writes to cache invalidation. Application/use-case code never talks to the cache infrastructure directly; it reacts to a domain event instead, which is what keeps the use case ignorant of caching as a concern.
 
-**Not shown above:** both `cascade-api` (writing the initial `pending` state) and `cascade-worker` (writing every later state transition) talk directly to PostgreSQL — omitted from the diagram to keep the BullMQ path readable; see the pattern description below for where each write happens.
+See `.claude/rules/hexagonal-layering.md` for the enforced boundary rules.
 
-A second Redis instance (`redis-cache`) is provisioned alongside the queue Redis above — its own container, its own volume, its own connection string — but nothing in the codebase reads or writes to it yet, and no phase in the roadmap defines what it's for. Not part of the diagram above; don't treat it as part of the BullMQ orchestration path until a phase actually assigns it a role.
+## Stack
 
----
-
-## Stack and rationale
-
-| Layer | Choice | Why |
+| Concern | Choice | Rationale |
 |---|---|---|
-| Language/runtime | Bun + TypeScript | Same runtime for the API and the worker — zero context-switching between them, shared types across both processes, fast startup with no build step in dev. |
-| HTTP framework | Elysia | Bun-native framework, minimal overhead — the goal isn't to learn the web framework, it's to not lose time on it. |
-| Queues | BullMQ | The subject of this POC — no alternative was evaluated, it's the foundational choice. |
-| Queue broker | Redis, dedicated instance | BullMQ's requirement. Own container via Docker Compose, no managed layer — a managed Redis has nothing to teach at this stage. |
-| Cache | Redis, separate dedicated instance | Provisioned for a future caching need; not consumed by any code yet (see the service-map note above). |
-| Database | PostgreSQL | Source of truth for business state (`orders`), kept separate from the transient orchestration in Redis — intentional, it forces thinking about what belongs on each side. |
-| ORM/driver | Drizzle | End-to-end typing consistent with the rest of the Bun/TS stack; avoids hand-written raw SQL without pulling focus from the real goal. |
-| HTTP client | Bruno | Plain-text, version-controlled request collection committed to the repo, used to exercise each endpoint per phase — replaces any visual queue dashboard; inspection happens through the service's own endpoints and logs. |
-| Containers | Docker Compose | One compose file wiring Postgres and both Redis instances; the API and worker run directly on the host in local dev, not containerized — containerizing the app code itself isn't worth it at this stage. |
-| Testing | Vitest | Used only to validate retry/backoff behavior reproducibly when that's actually needed — not the focus of this POC, no time invested in coverage. |
+| Runtime | Bun + TypeScript | Fast local iteration; compatibility of the queue client library with this runtime is an open risk to verify early rather than assumed. |
+| Queue / scheduler | BullMQ | Provides repeatable jobs with deterministic job identity, which is the mechanism this project relies on for safe multi-worker scheduling (see `expertise.md`). |
+| Cache / locks | Redis | Backs both the versioned cache-aside read model and the hand-rolled distributed lock with fencing tokens. |
+| Persistence | Postgres via Drizzle | System of record for report definitions and report executions. |
+| API | Elysia | REST surface for CRUD, result queries, and manual recomputation. |
+| Local infra | Docker Compose | See layout below. |
 
----
+## Local infrastructure layout
 
-## Queues and background processing
+Local infra is split by service rather than kept in one compose file: a Postgres directory and a Redis directory, each owning its own compose definition and its own environment-sample file, with an optional scripts/config subdirectory for that service's provisioning needs. A root compose entrypoint and a task-runner file wrap `docker compose up` / `down` / `down -v` for the whole stack. This split is currently scaffolded (the directories and file names exist) but not yet populated with real service definitions — that lands in the scaffolding phase of the roadmap.
 
-**Why they exist:** no flow involving "processing" (even fake processing) can live inside an endpoint's request/response cycle — blocking the HTTP response to simulate a few seconds of work produces exactly the same problem a real case would (timeouts, indefinite loading), which is precisely what this is meant to teach how to avoid.
+## Key schema
 
-**Pattern repeated in every sub-flow of the Order Processing module:**
+Redis keys are namespaced by report and, for the snapshot, by the report definition's version:
 
-1. The `cascade-api` endpoint receives the request, persists the initial (`pending`) state to Postgres, enqueues a job in BullMQ, and responds immediately with the resource id and its status.
-2. `cascade-worker` (a separate process, same codebase, different startup entrypoint) picks the job up from the queue.
-3. The processor runs the phase-appropriate simulation (sleep plus random failure).
-4. The worker updates the state in Postgres (`completed` / `error`) when it finishes.
-5. The client polls `GET /orders/:id`, or — from phase 5 on — listens for progress through an endpoint that surfaces what `QueueEvents` reports.
+```
+lock:report:{reportId}            # the distributed lock itself
+lock:report:{reportId}:token      # monotonic fencing-token counter for that lock
+report:snapshot:{reportId}:v{definitionVersion}   # cached, versioned report result
+```
 
-**Jobs running through this mechanism (by phase):**
-- `process-order` — the domain's core job, evolves from a simple job into a Flow.
-- `abandoned-order-check` — repeatable, phase 2.
-- `send-notification` — phase 4/7, its own queue.
-- `failed-orders` — dead letter queue, phase 3.
+## Cross-cutting patterns
 
-**Failure handling:** a job that exhausts its retries is never silently lost — the `failed` event routes it to the DLQ with the failure reason, queryable via `GET /failed-orders` and visible in the worker's structured logs.
-
-**Processes in development** (same repo, different startup command, not separate projects): `cascade-api` exposes the HTTP API; `cascade-worker` consumes the BullMQ queues — same codebase, its own entrypoint and its own startup command.
-
----
-
-## Database schema
-
-Already migrated. Kept deliberately small since the rich state lives in BullMQ/Redis while a job is in flight:
-
-- **`orders`**: `id`, `status` (`pending` / `processing` / `completed` / `failed` / `cancelled`), `payload` (jsonb), `created_at`, `updated_at`.
-- **`order_events`**: append-only log of state transitions per order (`order_id`, `event_type`, `detail` jsonb, `created_at`) — queried to reconstruct "what happened" to an order without going to Redis; a simplified equivalent of an audit trail.
-
-No auth, tenant, or real-business tables (`clients`, `products`) — fake `jsonb` payloads stand in wherever a "customer" or "product" is needed, because modeling those for real doesn't serve this POC's goal.
-
----
-
-## Environments and configuration
-
-One real environment: **local development**. No staging, no production — this is never deployed.
-
-- **Local:** Postgres and both Redis instances run via Docker Compose, with named volumes for persistence across restarts — useful for inspecting Redis/Postgres state between learning sessions without losing everything each time.
-- **Configuration:** environment variables are validated against a schema at boot rather than read ad hoc, covering app identity/port, the queue and cache Redis connection strings, the Postgres connection and credentials, and CORS settings. Each service (Postgres, the two Redis instances, the app) keeps its own env file rather than sharing one root file — real values stay untracked, a sample file with empty keys stays committed.
-- **No real secrets management:** no vault, no CI secrets, no separate database roles (`migrator` vs. `app`) — that solves a team/scale problem this POC doesn't have, and adding it would pull focus from the BullMQ goal.
-
-This level of simplicity is intentional: every hour spent on infrastructure that isn't Redis, BullMQ, or Postgres is an hour not spent on the project's actual goal.
+- **Workers are stateless.** All coordination state (locks, fencing tokens) lives in Redis, and all durable state (executions) lives in Postgres — never in a worker process's memory. This is what makes running several worker instances of the same process safe: any one of them can be killed and replaced without losing state or corrupting in-flight coordination.
+- **Latency budget for cached reads.** A report's current result must be servable from cache in well under 10ms — this is a project-wide performance target for the read path, not a per-report tuning decision.
