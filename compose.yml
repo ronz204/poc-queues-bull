@@ -1,0 +1,20 @@
+name: cerve
+
+include:
+  - path: docker/data/compose.yml
+    env_file: docker/data/.env.${ENV:-local}
+  - path: docker/redis/compose.yml
+    env_file: docker/redis/.env.${ENV:-local}
+
+volumes:
+  cerve-postgres-data:
+    driver: local
+    name: cerve-postgres
+  cerve-redis-data:
+    driver: local
+    name: cerve-redis
+
+networks:
+  cerve-network:
+    driver: bridge
+    name: cerve-network

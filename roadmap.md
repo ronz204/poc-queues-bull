@@ -8,9 +8,9 @@ Tracker personal de progreso. No forma parte de la knowledge base del harness (n
 
 - [x] Harness delta instalado (CLAUDE.md + docs + rules + skills)
 - [x] Split de infra local por servicio (`docker/data/`, `docker/redis/`) creado
-- [ ] `docker/data/compose.yml` con Postgres real
-- [ ] `docker/redis/compose.yml` con Redis real
-- [ ] Root `compose.yml` orquestando ambos
+- [x] `docker/data/compose.yml` con Postgres real
+- [x] `docker/redis/compose.yml` con Redis real
+- [x] Root `compose.yml` orquestando ambos
 - [ ] Estructura de carpetas hexagonal bajo `services/<nombre>/`
 - [ ] "Hello world": un `ReportDefinition` hardcodeado recalculándose cada minuto, sin lock ni cache
 
