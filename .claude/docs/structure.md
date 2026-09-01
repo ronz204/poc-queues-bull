@@ -1,4 +1,4 @@
-# Motor de Reportes Analíticos — Structure
+# Cerve — Structure
 
 System architecture, stack choices, and cross-cutting patterns. Domain vision lives in `overview.md`; the build sequence lives in `approach.md`; mechanism explanations live in `expertise.md`.
 

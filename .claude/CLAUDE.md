@@ -1,4 +1,4 @@
-# poc-bullmq-redis
+# Cerve
 
 A recurring analytics reporting engine over a synthetic sales dataset. It exists to practice, in one integrated system, four backend techniques: recurring job scheduling with multi-worker coordination, distributed locks with fencing tokens, and versioned cache-aside invalidation driven by domain events.
 

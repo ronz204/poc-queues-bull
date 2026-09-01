@@ -1,4 +1,4 @@
-# Motor de Reportes Analíticos — Overview
+# Cerve — Overview
 
 Vision and domain scope for the reporting engine. Architecture and stack live in `structure.md`; the build roadmap lives in `approach.md`; engineering mechanisms live in `expertise.md`.
 

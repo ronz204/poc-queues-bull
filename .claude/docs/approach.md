@@ -1,4 +1,4 @@
-# Motor de Reportes Analíticos — Build Approach
+# Cerve — Build Approach
 
 The build plan for the reporting engine: what gets built, in what order, and what "done" means. Domain vision lives in `overview.md`; architecture and stack live in `structure.md`; the underlying mechanisms live in `expertise.md`.
 
