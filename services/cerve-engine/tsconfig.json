@@ -1,5 +1,6 @@
 {
   "include": [
+    "cmd/**/*",
     "source/**/*",
     "drizzle/**/*",
     "testing/**/*",
@@ -36,5 +37,18 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
+
+    // Module resolution - Support for absolute imports
+    "paths": {
+      "@env": ["./source/env.ts"],
+      "@app/*": ["./source/app/*"],
+      "@core/*": ["./source/core/*"],
+
+      "@schemas/*": ["./drizzle/schemas/*"],
+      "@elements/*": ["./drizzle/elements/*"],
+
+      "@stores/*": ["./source/infra/stores/*"],
+      "@plugins/*": ["./source/infra/plugins/*"],
+    },
   }
 }
