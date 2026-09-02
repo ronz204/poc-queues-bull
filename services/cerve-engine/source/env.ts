@@ -10,6 +10,13 @@ const envSchema = z.object({
   SERVICE_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
 
   // ==========================================
+  // ====== PostgreSQL
+  // ==========================================
+  POSTGRES_URL: z.url().min(1),
+  POSTGRES_USERNAME: z.string().min(1),
+  POSTGRES_PASSWORD: z.string().min(1),
+
+  // ==========================================
   // ====== CORS Policies
   // ==========================================
   CORS_ORIGIN: z.string()
