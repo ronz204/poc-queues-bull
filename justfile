@@ -3,6 +3,9 @@ environment := "local"
 up env=environment:
   ENV={{env}} docker compose up -d
 
+stop env=environment:
+  ENV={{env}} docker compose stop
+
 down env=environment:
   ENV={{env}} docker compose down
 

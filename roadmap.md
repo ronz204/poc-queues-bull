@@ -11,14 +11,14 @@ Tracker personal de progreso. No forma parte de la knowledge base del harness (n
 - [x] `docker/data/compose.yml` con Postgres real
 - [x] `docker/redis/compose.yml` con Redis real
 - [x] Root `compose.yml` orquestando ambos
-- [ ] Estructura de carpetas hexagonal bajo `services/<nombre>/`
-- [ ] "Hello world": un `ReportDefinition` hardcodeado recalculándose cada minuto, sin lock ni cache
+- [x] Estructura de carpetas hexagonal bajo `services/<nombre>/`
+- [x] "Hello world": un `ReportDefinition` hardcodeado recalculándose cada minuto, sin lock ni cache
 
 ## Fase 1 — Dominio y persistencia
 
-- [ ] Modelar `ReportDefinition` (aggregate root) con invariantes: cron válido, versión solo incrementa, no dos definiciones activas con el mismo nombre
-- [ ] Modelar `ReportExecution`
-- [ ] Setup de Drizzle + migraciones
+- [x] Modelar `ReportDefinition` (aggregate root) con invariantes: cron válido, versión solo incrementa, no dos definiciones activas con el mismo nombre
+- [x] Modelar `ReportExecution`
+- [x] Setup de Drizzle + migraciones
 - [ ] CRUD real vía API (Elysia) — sin locks, sin cache todavía
 
 ## Fase 2 — Scheduling real con BullMQ

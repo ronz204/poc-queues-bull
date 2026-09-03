@@ -45,7 +45,7 @@
       "@core/*": ["./source/core/*"],
 
       "@schemas/*": ["./drizzle/schemas/*"],
-      "@elements/*": ["./drizzle/elements/*"],
+      "@scripts/*": ["./drizzle/scripts/*"],
 
       "@stores/*": ["./source/infra/stores/*"],
       "@plugins/*": ["./source/infra/plugins/*"],
