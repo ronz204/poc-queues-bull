@@ -8,20 +8,26 @@
 		"lint": "biome check .",
 		"format": "biome format --write .",
 		"lint:fix": "biome check --write .",
+		"drizz:seeding": "bun run cmd/seeder.boot.ts",
+		"drizz:migrate": "bunx --bun drizzle-kit migrate",
 		"dev:worker": "bun --watch run cmd/worker.boot.ts",
 		"dev:service": "bun --watch run cmd/service.boot.ts"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.14",
-		"@types/bun": "latest"
+		"@types/bun": "latest",
+		"drizzle-kit": "^1.0.0-rc.4",
+		"vitest": "^5.0.1"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
 	},
 	"dependencies": {
 		"dockdi": "^1.0.2",
+		"drizzle-orm": "^1.0.0-rc.4",
+		"drizzle-seed": "^1.0.0-rc.4",
+		"postgres": "^3.4.9",
 		"uuidv7": "^1.2.1",
-		"vitest": "^5.0.1",
 		"zod": "^4.6.5"
 	}
 }
