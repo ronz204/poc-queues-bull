@@ -1,0 +1,19 @@
+name: cerve
+
+include:
+  - path: docker/cache/compose.yml
+  - path: docker/queues/compose.yml
+  - path: docker/database/compose.yml
+
+volumes:
+  cerve-postgres-data:
+    driver: local
+    name: cerve-postgres-data
+  cerve-queues-data:
+    driver: local
+    name: cerve-queues-data
+
+networks:
+  cerve-network:
+    driver: bridge
+    name: cerve-network
