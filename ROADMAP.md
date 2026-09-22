@@ -27,7 +27,7 @@ Status legend: 🔲 Not started · 🔄 In progress · ✅ Done (only once every
 
 Prove the job loop runs at all, with no coordination mechanism yet.
 
-- [ ] Local infra via Docker Compose (Postgres + Redis)
+- [ ] Local infra via Docker Compose (Postgres + Redis ×2: queues/locks, cache)
 - [ ] Hexagonal folder structure scaffolded
 - [ ] Single hardcoded report definition recomputing on a fixed interval, no lock, no cache
 
