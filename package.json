@@ -1,0 +1,20 @@
+{
+  "name": "poc-queues-bull",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev:worker": "bun --watch run cmd/worker.boot.ts",
+		"dev:service": "bun --watch run cmd/service.boot.ts"
+	},
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "dockdi": "^1.0.2",
+    "uuidv7": "^1.2.1",
+    "zod": "^4.6.5"
+  }
+}
