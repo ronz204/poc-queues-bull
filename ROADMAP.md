@@ -6,11 +6,11 @@ This roadmap tracks Cerve's build progress toward its base system, phased from s
 
 ## Overview
 
-**Overall progress: 0 / 25 tasks — 0%**
+**Overall progress: 3 / 26 tasks — 12%**
 
 | # | Step | Status | Progress |
 |---|---|---|---|
-| 1 | [Scaffolding](#1--scaffolding) | 🔲 Not started | 0/3 — 0% |
+| 1 | [Scaffolding](#1--scaffolding) | 🔄 In progress | 3/4 — 75% |
 | 2 | [Domain & persistence](#2--domain--persistence) | 🔲 Not started | 0/3 — 0% |
 | 3 | [Real scheduling](#3--real-scheduling) | 🔲 Not started | 0/4 — 0% |
 | 4 | [Distributed locking & fencing tokens](#4--distributed-locking--fencing-tokens) | 🔲 Not started | 0/3 — 0% |
@@ -27,8 +27,9 @@ Status legend: 🔲 Not started · 🔄 In progress · ✅ Done (only once every
 
 Prove the job loop runs at all, with no coordination mechanism yet.
 
-- [ ] Local infra via Docker Compose (Postgres + Redis ×2: queues/locks, cache)
-- [ ] Hexagonal folder structure scaffolded
+- [x] Local infra via Docker Compose (Postgres + Redis ×2: queues/locks, cache)
+- [x] Hexagonal folder structure scaffolded
+- [x] Synthetic sales dataset seeded via reusable Client/UnitOfWork/DI-backed seeders
 - [ ] Single hardcoded report definition recomputing on a fixed interval, no lock, no cache
 
 ## 2 — Domain & persistence
