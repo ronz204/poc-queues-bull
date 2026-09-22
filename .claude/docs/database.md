@@ -11,13 +11,20 @@ Two Postgres schemas separate the ingested source dataset from the reporting eng
 | Schema | Holds |
 |---|---|
 | `sales` | products, regions, sale transactions |
-| `reporting` | report definitions, report executions, and all five enums below |
+| `reports` | report definitions, report executions, and all five enums below |
 
 No foreign key crosses between the two schemas — every reference stays within its own schema, so the split is pure namespacing, not a source of cross-schema join complexity.
 
 ## Access control
 
-Not applicable. This is a single-developer local learning project with no authentication/authorization or multi-tenancy in scope: one application-level database role is used for both migrations and runtime access, with no role split and no row-level or per-tenant isolation policy.
+Two database roles split migration/seeding authority from runtime access — no row-level or per-tenant isolation beyond that, since this is a single-developer local learning project with no authentication/authorization or multi-tenancy in scope:
+
+| Role | Privileges | Used for |
+|---|---|---|
+| `sampler` | Owns both schemas (`CREATE SCHEMA ... AUTHORIZATION sampler`); has `CREATE` on the database | Migrations, schema changes, and populating the synthetic sales dataset |
+| `runner` | `USAGE` on both schemas; `SELECT`/`INSERT`/`UPDATE` on tables, granted automatically on every table `sampler` creates (`ALTER DEFAULT PRIVILEGES FOR ROLE sampler`) | Runtime access for the api and worker processes |
+
+`runner` can never alter schema — no `CREATE`, no schema ownership — so a bug or bad input reaching the application can read and write rows but can't touch DDL. `sampler` is the only role migrations and dataset seeding ever run as. The default-privilege grant means `runner` automatically gets row access to any table `sampler` creates later, without a manual `GRANT` per new table.
 
 ## Data model
 
@@ -70,7 +77,7 @@ sales.sale_transactions
 #### report definitions
 
 ```
-reporting.report_definitions
+reports.report_definitions
   id                uuid primary key
   name              text not null
   aggregation_type  aggregation_type not null
@@ -90,7 +97,7 @@ A report definition is retired by setting `status = 'archived'`, never by deleti
 
 ```
 create unique index report_definitions_active_name_idx
-  on reporting.report_definitions (name)
+  on reports.report_definitions (name)
   where status = 'active';
 ```
 
@@ -99,9 +106,9 @@ An archived definition's name becomes reusable by a new active one, since the co
 #### report executions
 
 ```
-reporting.report_executions
+reports.report_executions
   id                         uuid primary key
-  report_definition_id       uuid not null references reporting.report_definitions(id)
+  report_definition_id       uuid not null references reports.report_definitions(id)
   report_definition_version  integer not null
   trigger_type               execution_trigger_type not null
   scheduled_for               timestamptz not null
@@ -128,11 +135,11 @@ reporting.report_executions
 
 ```
 create unique index report_executions_idempotency_idx
-  on reporting.report_executions (report_definition_id, report_definition_version, trigger_type, scheduled_for);
+  on reports.report_executions (report_definition_id, report_definition_version, trigger_type, scheduled_for);
 ```
 
 `trigger_type` is part of the key so a manually forced recomputation never collides with that same tick's automatic cron run, while two retries of the *same* trigger (same scheduled tick, same trigger type) do collide and the retry is rejected as already-attempted rather than inserted as a second row.
-- **No foreign key crosses the `sales`/`reporting` schema boundary** — every reference stays within its own schema.
+- **No foreign key crosses the `sales`/`reports` schema boundary** — every reference stays within its own schema.
 
 ## Infrastructure
 
