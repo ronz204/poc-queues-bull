@@ -2,7 +2,7 @@
 set -euo pipefail
 
 script_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
-bootstrap_sql="$script_dir/database/00.bootstrap.sql"
+bootstrap_sql="$script_dir/sql/00.bootstrap.sql"
 
 run_psql() {
   psql -v ON_ERROR_STOP=1 \
