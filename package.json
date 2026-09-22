@@ -1,22 +1,27 @@
 {
-  "name": "poc-queues-bull",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "dev:worker": "bun --watch run cmd/worker.boot.ts",
-    "dev:service": "bun --watch run cmd/service.boot.ts"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.5.14",
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "dockdi": "^1.0.2",
-    "uuidv7": "^1.2.1",
-    "vitest": "^5.0.1",
-    "zod": "^4.6.5"
-  }
+	"name": "poc-queues-bull",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"lint": "biome check .",
+		"format": "biome format --write .",
+		"lint:fix": "biome check --write .",
+		"dev:worker": "bun --watch run cmd/worker.boot.ts",
+		"dev:service": "bun --watch run cmd/service.boot.ts"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.14",
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"dockdi": "^1.0.2",
+		"uuidv7": "^1.2.1",
+		"vitest": "^5.0.1",
+		"zod": "^4.6.5"
+	}
 }

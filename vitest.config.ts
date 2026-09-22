@@ -6,7 +6,7 @@ export default defineConfig({
 			"@tests": "./testing",
 			"@app": "./source/app",
 			"@core": "./source/core",
-      "@infra": "./source/infra",
+			"@infra": "./source/infra",
 		},
 	},
 	test: {
