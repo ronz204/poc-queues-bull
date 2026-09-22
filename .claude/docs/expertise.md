@@ -1,6 +1,6 @@
-# Distributed Coordination — Expertise
+# Expertise
 
-General engineering knowledge behind the four mechanisms this project is built to practice. This describes how each pattern works and why, independent of this project's current implementation state — see `structure.md` for how they map onto this system's architecture and `approach.md` for when each lands.
+How the non-trivial mechanisms this project depends on actually work, independent of where they're used in this system's architecture (that's `modules.md`/`structure.md`'s job) or when each lands (that's `approach.md`'s job).
 
 ---
 

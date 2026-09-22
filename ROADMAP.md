@@ -1,0 +1,95 @@
+# Roadmap
+
+This roadmap tracks Cerve's build progress toward its base system, phased from scaffolding through hardening.
+
+---
+
+## Overview
+
+**Overall progress: 0 / 25 tasks — 0%**
+
+| # | Step | Status | Progress |
+|---|---|---|---|
+| 1 | [Scaffolding](#1--scaffolding) | 🔲 Not started | 0/3 — 0% |
+| 2 | [Domain & persistence](#2--domain--persistence) | 🔲 Not started | 0/3 — 0% |
+| 3 | [Real scheduling](#3--real-scheduling) | 🔲 Not started | 0/4 — 0% |
+| 4 | [Distributed locking & fencing tokens](#4--distributed-locking--fencing-tokens) | 🔲 Not started | 0/3 — 0% |
+| 5 | [Versioned cache-aside](#5--versioned-cache-aside) | 🔲 Not started | 0/3 — 0% |
+| 6 | [Event-driven invalidation](#6--event-driven-invalidation) | 🔲 Not started | 0/2 — 0% |
+| 7 | [Idempotency & hardening](#7--idempotency--hardening) | 🔲 Not started | 0/4 — 0% |
+| 8 | [Stretch: cross-report dependencies](#8--stretch-cross-report-dependencies) | 🔲 Not started | 0/3 — 0% |
+
+Status legend: 🔲 Not started · 🔄 In progress · ✅ Done (only once every task under it is checked).
+
+---
+
+## 1 — Scaffolding
+
+Prove the job loop runs at all, with no coordination mechanism yet.
+
+- [ ] Local infra via Docker Compose (Postgres + Redis)
+- [ ] Hexagonal folder structure scaffolded
+- [ ] Single hardcoded report definition recomputing on a fixed interval, no lock, no cache
+
+## 2 — Domain & persistence
+
+Report definitions and executions as real aggregates, backed by real persistence. No locks, no cache yet.
+
+- [ ] Report definition aggregate modeled with its real invariants
+- [ ] Report execution aggregate modeled with its real invariants
+- [ ] Real CRUD for report definitions through the API
+
+## 3 — Real scheduling
+
+One recurring job per report definition, safe under multiple concurrently running workers.
+
+- [ ] One recurring job per report definition
+- [ ] Job rescheduled automatically on cron edits
+- [ ] Deterministic job identity
+- [ ] Verified safe under multiple concurrently running worker processes
+
+## 4 — Distributed locking & fencing tokens
+
+Hand-rolled first, so the mechanism is understood before evaluating a library alternative.
+
+- [ ] Distributed lock acquired before a worker recomputes a report
+- [ ] Monotonically increasing fencing token tied to the lock
+- [ ] Demonstrated against a simulated worker-failure (zombie) scenario
+
+## 5 — Versioned cache-aside
+
+The cached read model, with a fallback for the no-snapshot case.
+
+- [ ] Cached read model for a report's result
+- [ ] Fresh cache served without touching the primary datastore
+- [ ] Synchronous-compute fallback when no cached snapshot exists yet
+
+## 6 — Event-driven invalidation
+
+The two invalidation strategies wired to their respective domain events.
+
+- [ ] Definition-change event passively orphans the old cache key
+- [ ] Execution-result event actively overwrites the current version's key, guarded by the fencing token
+
+## 7 — Idempotency & hardening
+
+Deterministic execution identity, retries, live-looking data, and basic observability.
+
+- [ ] Deterministic execution identity so a retried/duplicated job can't produce a duplicate execution record
+- [ ] Retry handling for recomputation jobs
+- [ ] Synthetic data feed simulating continuous ingestion
+- [ ] Basic observability of which worker ran which execution
+
+## 8 — Stretch: cross-report dependencies
+
+Explicitly non-blocking for the base system.
+
+- [ ] Cascading-recalculation graph across reports that depend on each other's results
+- [ ] Metrics endpoint surfacing lock acquisitions, cache hit/miss ratio, and execution durations
+- [ ] Minimal read-only view of report state as an alternative to calling the API directly
+
+---
+
+## Adding a new step
+
+Append a new `## N — <name>` section with its own task checklist, add its row to the Overview table, and recompute **Overall** as the new total checked/total across every step. Never mark a step "Done" while an unchecked task remains under it — split the step instead of rounding up.

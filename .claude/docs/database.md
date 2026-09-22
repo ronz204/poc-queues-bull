@@ -1,41 +1,45 @@
-# Persistence — Database
+# Database
 
-The Postgres schema backing the domain's durable aggregates: the synthetic sales dataset, report definitions, and report executions. Redis-held coordination and cache state (distributed locks, fencing-token counters, the cached report snapshot) is not part of this schema — it never lands in Postgres at all.
+The Postgres schema backing the domain's durable aggregates: the synthetic sales dataset, report definitions, and report executions. Redis-held coordination and cache state (distributed locks, fencing-token counters, the cached report snapshot) is not part of this schema — it never lands in Postgres at all; see the Non-goals section below.
 
 ---
 
-## ID generation
-
-Every primary key is a `uuid` column, but the value is generated in the application layer as a UUIDv7 (time-ordered) identifier, not by a database-side random UUID default. A monotonically-increasing key keeps new rows physically clustered at the end of the primary-key index instead of scattered across it, which matters here because `sale_transactions` and `report_executions` are both high-insert tables (a continuous synthetic feed, and one row per recomputation respectively) — a random v4 key would otherwise cause steadily worsening index bloat as either table grows.
-
-This is unrelated to the idempotency mechanism on `report_executions` below: that mechanism dedups on a separate unique constraint over stable input fields, not on the row's own generated `id`.
-
-## Schemas
+## Schema
 
 Two Postgres schemas separate the ingested source dataset from the reporting engine's own state, mirroring a distinction the domain already draws — a sale transaction is external data the engine only reads, while a report definition/execution is the aggregate the project's own coordination mechanisms operate on:
 
 | Schema | Holds |
 |---|---|
-| `sales` | `products`, `regions`, `sale_transactions` |
-| `reporting` | `report_definitions`, `report_executions`, and all five enums below |
+| `sales` | products, regions, sale transactions |
+| `reporting` | report definitions, report executions, and all five enums below |
 
 No foreign key crosses between the two schemas — every reference stays within its own schema, so the split is pure namespacing, not a source of cross-schema join complexity.
 
-## Enums
+## Access control
+
+Not applicable. This is a single-developer local learning project with no authentication/authorization or multi-tenancy in scope: one application-level database role is used for both migrations and runtime access, with no role split and no row-level or per-tenant isolation policy.
+
+## Data model
+
+### ID generation
+
+Every primary key is a `uuid` column, but the value is generated in the application layer as a UUIDv7 (time-ordered) identifier, not by a database-side random UUID default. A monotonically increasing key keeps new rows physically clustered at the end of the primary-key index instead of scattered across it, which matters because the sale-transactions and report-executions tables are both high-insert (a continuous synthetic feed, and one row per recomputation respectively) — a random v4 key would otherwise cause steadily worsening index bloat as either table grows. This is unrelated to the idempotency mechanism on report executions below: that mechanism dedups on a separate unique constraint over stable input fields, not on the row's own generated id.
+
+### Enums
 
 | Enum | Values | Used by |
 |---|---|---|
-| `aggregation_type` | `sum`, `avg`, `count`, `min`, `max` | `report_definitions.aggregation_type` |
-| `group_by_dimension` | `product`, `region`, `day`, `week`, `month` | `report_definitions.group_by` |
-| `report_definition_status` | `active`, `archived` | `report_definitions.status` |
-| `execution_trigger_type` | `cron`, `manual` | `report_executions.trigger_type` |
-| `execution_status` | `pending`, `running`, `succeeded`, `failed` | `report_executions.status` |
+| `aggregation_type` | `sum`, `avg`, `count`, `min`, `max` | report definitions' aggregation type |
+| `group_by_dimension` | `product`, `region`, `day`, `week`, `month` | report definitions' grouping dimension |
+| `report_definition_status` | `active`, `archived` | report definitions' status |
+| `execution_trigger_type` | `cron`, `manual` | report executions' trigger type |
+| `execution_status` | `pending`, `running`, `succeeded`, `failed` | report executions' status |
 
 The aggregation/grouping vocabulary is a closed enum rather than an open string, matching the project's bounded, non-OLAP scope — every value the domain layer can legally produce is enumerable in advance, so there's no reason to defer that validation to the application layer alone.
 
-## Tables
+### Tables
 
-### sales.products / sales.regions
+#### products / regions
 
 ```
 sales.products
@@ -49,7 +53,7 @@ sales.regions
 
 Dimension tables rather than free-text columns on the transaction row, so a product or region is one row referenced by every transaction and report grouping that touches it, instead of a string repeated and potentially misspelled across millions of rows.
 
-### sales.sale_transactions
+#### sale transactions
 
 ```
 sales.sale_transactions
@@ -63,7 +67,7 @@ sales.sale_transactions
 
 `occurred_at` is the domain-meaningful event time (when the sale happened); `created_at` is purely the row's insertion time, kept separate because the synthetic feed may insert transactions out of order relative to when they occurred. Aggregation queries filter and group on `occurred_at`, `product_id`, and `region_id` — all three need an index to keep recomputation within a reasonable bound as the dataset grows.
 
-### reporting.report_definitions
+#### report definitions
 
 ```
 reporting.report_definitions
@@ -80,7 +84,7 @@ reporting.report_definitions
   updated_at        timestamptz not null
 ```
 
-`version` only ever increases and is bumped on every config edit — this is the same version number the cache key encodes for passive, version-in-key invalidation. `window_start`/`window_end` are a fixed calendar range rather than a rolling duration: editing the window is itself a config edit like any other, and goes through the same version bump and cache invalidation as an aggregation-type or grouping change.
+`version` only ever increases and is bumped on every config edit — this is the same version number the cache key encodes for passive, version-in-key cache invalidation. `window_start`/`window_end` are a fixed calendar range rather than a rolling duration: editing the window is itself a config edit like any other, and goes through the same version bump and cache invalidation as an aggregation-type or grouping change.
 
 A report definition is retired by setting `status = 'archived'`, never by deleting the row — this preserves its execution history and keeps `report_executions.report_definition_id` a stable foreign key. The "no two active definitions share a name" invariant is enforced with a partial unique index:
 
@@ -92,32 +96,35 @@ create unique index report_definitions_active_name_idx
 
 An archived definition's name becomes reusable by a new active one, since the constraint only ever looks at active rows.
 
-### reporting.report_executions
+#### report executions
 
 ```
 reporting.report_executions
-  id                        uuid primary key
-  report_definition_id      uuid not null references reporting.report_definitions(id)
-  report_definition_version integer not null
-  trigger_type              execution_trigger_type not null
-  scheduled_for              timestamptz not null
-  status                    execution_status not null default 'pending'
-  worker_id                 text
-  fencing_token             bigint
-  result                    jsonb
-  error_message             text
-  started_at                timestamptz
-  finished_at                timestamptz
-  created_at                timestamptz not null default now()
+  id                         uuid primary key
+  report_definition_id       uuid not null references reporting.report_definitions(id)
+  report_definition_version  integer not null
+  trigger_type               execution_trigger_type not null
+  scheduled_for               timestamptz not null
+  status                     execution_status not null default 'pending'
+  worker_id                  text
+  fencing_token              bigint
+  result                     jsonb
+  error_message              text
+  started_at                 timestamptz
+  finished_at                 timestamptz
+  created_at                 timestamptz not null default now()
 ```
 
 `report_definition_version` freezes the definition's version at the moment this execution was triggered, separately from the live `report_definitions.version` column, which keeps mutating. This matters for two reasons: it's an audit trail of which config an execution actually ran under, and it's part of the row's idempotency key below — if the definition is edited between a job's retries, the new version is deliberately treated as a different attempt, not a duplicate of the old one.
 
-`worker_id`, `fencing_token`, and `error_message` are nullable because they're only known once a worker actually starts running the job (`status` moves past `pending`) — `fencing_token` is recorded here purely for audit/debugging visibility into which attempt won; the correctness guarantee itself is enforced where the lock and token counter actually live, not by this column.
+`worker_id`, `fencing_token`, and `error_message` are nullable because they're only known once a worker actually starts running the job (`status` moves past `pending`) — `fencing_token` is recorded here purely for audit/debugging visibility into which attempt won; the correctness guarantee itself is enforced where the lock and token counter actually live (Redis), not by this column.
 
 `result` is a single `jsonb` column rather than a normalized per-group-key table, because its shape depends on `aggregation_type`/`group_by` and would otherwise need a different table per combination.
 
-**Idempotent execution identity** is enforced with a unique constraint over the inputs that stay stable across a retry or redelivery of the same job:
+## Persistence invariants
+
+- **No two active report definitions share a name** — enforced by the partial unique index above, scoped to `status = 'active'` so an archived name becomes reusable.
+- **Idempotent execution identity** is enforced with a unique constraint over the inputs that stay stable across a retry or redelivery of the same job:
 
 ```
 create unique index report_executions_idempotency_idx
@@ -125,6 +132,15 @@ create unique index report_executions_idempotency_idx
 ```
 
 `trigger_type` is part of the key so a manually forced recomputation never collides with that same tick's automatic cron run, while two retries of the *same* trigger (same scheduled tick, same trigger type) do collide and the retry is rejected as already-attempted rather than inserted as a second row.
+- **No foreign key crosses the `sales`/`reporting` schema boundary** — every reference stays within its own schema.
+
+## Infrastructure
+
+Not provisioned yet. Planned: a single local Postgres instance run via Docker Compose, no hosted/remote environment, no replication or backup strategy beyond what a local learning project needs.
+
+## Access patterns
+
+Application code reaches Postgres through a query builder rather than raw SQL strings, and through a repository port/adapter split — the application layer never imports the query-builder library directly. Aggregation queries are expected to filter/group on the indexed `occurred_at`/`product_id`/`region_id` columns to avoid an unbounded full-table scan as the synthetic dataset grows.
 
 ---
 
