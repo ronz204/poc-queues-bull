@@ -1,0 +1,785 @@
+{
+  "version": "8",
+  "dialect": "postgres",
+  "id": "56c8be3f-153d-4d72-a9dc-38f4eeaf1d1d",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "ddl": [
+    {
+      "values": [
+        "sum",
+        "avg",
+        "count",
+        "min",
+        "max"
+      ],
+      "name": "aggregation_type",
+      "entityType": "enums",
+      "schema": "reports"
+    },
+    {
+      "values": [
+        "product",
+        "region",
+        "day",
+        "week",
+        "month"
+      ],
+      "name": "group_by_dimension",
+      "entityType": "enums",
+      "schema": "reports"
+    },
+    {
+      "values": [
+        "active",
+        "archived"
+      ],
+      "name": "report_definition_status",
+      "entityType": "enums",
+      "schema": "reports"
+    },
+    {
+      "values": [
+        "pending",
+        "running",
+        "succeeded",
+        "failed"
+      ],
+      "name": "execution_status",
+      "entityType": "enums",
+      "schema": "reports"
+    },
+    {
+      "values": [
+        "cron",
+        "manual"
+      ],
+      "name": "execution_trigger_type",
+      "entityType": "enums",
+      "schema": "reports"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "products",
+      "entityType": "tables",
+      "schema": "sales"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "regions",
+      "entityType": "tables",
+      "schema": "sales"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "report_definitions",
+      "entityType": "tables",
+      "schema": "reports"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "report_executions",
+      "entityType": "tables",
+      "schema": "reports"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "sale_transactions",
+      "entityType": "tables",
+      "schema": "sales"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "sales",
+      "table": "products"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "sales",
+      "table": "products"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "sales",
+      "table": "regions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "sales",
+      "table": "regions"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "type": "aggregation_type",
+      "typeSchema": "reports",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "aggregation_type",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "type": "group_by_dimension",
+      "typeSchema": "reports",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "group_by",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "window_start",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "window_end",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "cron_expression",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "1",
+      "generated": null,
+      "identity": null,
+      "name": "version",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "type": "report_definition_status",
+      "typeSchema": "reports",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'active'",
+      "generated": null,
+      "identity": null,
+      "name": "status",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "report_definition_id",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "report_definition_version",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "execution_trigger_type",
+      "typeSchema": "reports",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "trigger_type",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "scheduled_for",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "execution_status",
+      "typeSchema": "reports",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'pending'",
+      "generated": null,
+      "identity": null,
+      "name": "status",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "worker_id",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "bigint",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "fencing_token",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "result",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "error_message",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "started_at",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "finished_at",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "sales",
+      "table": "sale_transactions"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "product_id",
+      "entityType": "columns",
+      "schema": "sales",
+      "table": "sale_transactions"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region_id",
+      "entityType": "columns",
+      "schema": "sales",
+      "table": "sale_transactions"
+    },
+    {
+      "type": "numeric(12,2)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "amount",
+      "entityType": "columns",
+      "schema": "sales",
+      "table": "sale_transactions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "occurred_at",
+      "entityType": "columns",
+      "schema": "sales",
+      "table": "sale_transactions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "sales",
+      "table": "sale_transactions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "name",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": "\"status\" = 'active'",
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "report_definitions_active_name_idx",
+      "entityType": "indexes",
+      "schema": "reports",
+      "table": "report_definitions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "report_definition_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "report_definition_version",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "trigger_type",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "scheduled_for",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "report_executions_idempotency_idx",
+      "entityType": "indexes",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "occurred_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "sale_transactions_occurred_at_idx",
+      "entityType": "indexes",
+      "schema": "sales",
+      "table": "sale_transactions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "product_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "sale_transactions_product_id_idx",
+      "entityType": "indexes",
+      "schema": "sales",
+      "table": "sale_transactions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "sale_transactions_region_id_idx",
+      "entityType": "indexes",
+      "schema": "sales",
+      "table": "sale_transactions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        "report_definition_id"
+      ],
+      "schemaTo": "reports",
+      "tableTo": "report_definitions",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "RESTRICT",
+      "onDelete": "RESTRICT",
+      "name": "report_executions_report_definition_id_fk",
+      "entityType": "fks",
+      "schema": "reports",
+      "table": "report_executions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        "product_id"
+      ],
+      "schemaTo": "sales",
+      "tableTo": "products",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "RESTRICT",
+      "onDelete": "RESTRICT",
+      "name": "sale_transactions_product_id_fk",
+      "entityType": "fks",
+      "schema": "sales",
+      "table": "sale_transactions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        "region_id"
+      ],
+      "schemaTo": "sales",
+      "tableTo": "regions",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "RESTRICT",
+      "onDelete": "RESTRICT",
+      "name": "sale_transactions_region_id_fk",
+      "entityType": "fks",
+      "schema": "sales",
+      "table": "sale_transactions"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "products_pkey",
+      "schema": "sales",
+      "table": "products",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "regions_pkey",
+      "schema": "sales",
+      "table": "regions",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "report_definitions_pkey",
+      "schema": "reports",
+      "table": "report_definitions",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "report_executions_pkey",
+      "schema": "reports",
+      "table": "report_executions",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "sale_transactions_pkey",
+      "schema": "sales",
+      "table": "sale_transactions",
+      "entityType": "pks"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "name"
+      ],
+      "nullsNotDistinct": false,
+      "name": "products_name_key",
+      "schema": "sales",
+      "table": "products",
+      "entityType": "uniques"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "name"
+      ],
+      "nullsNotDistinct": false,
+      "name": "regions_name_key",
+      "schema": "sales",
+      "table": "regions",
+      "entityType": "uniques"
+    }
+  ],
+  "renames": []
+}
