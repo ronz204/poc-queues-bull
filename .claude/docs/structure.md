@@ -18,9 +18,10 @@ Stack choices, system topology, infrastructure, and cross-cutting patterns. The 
 
 ## Topology
 
-Nothing is implemented yet; this is the intended request/data flow once the base system lands:
+Nothing is implemented yet; this is the intended request/data flow once the base system lands. The system runs as two separate OS processes — an api process and a worker process — each started from its own entrypoint but sharing the same Application-layer use cases and ports:
 
 ```
+api process:
 HTTP request -> REST API adapter -> Application-layer use case
                                           |
                      +--------------------+--------------------+
@@ -28,13 +29,26 @@ HTTP request -> REST API adapter -> Application-layer use case
            repository port         cache port           scheduler port
                      |                    |                    |
                 Postgres          Redis (cache)         recurring-job queue
+
+worker process:
+recurring job fires -> Application-layer use case
+                                          |
+                     +--------------------+--------------------+
+                     |                    |                    |
+           repository port         cache port             lock port
+                     |                    |                    |
+                Postgres          Redis (cache)         Redis (queues)
 ```
 
-A recurring job fires on its own schedule (no inbound HTTP request involved), calls into the same Application-layer use case a manual recomputation would, and follows the same path down through the lock port and repository/cache ports. The lock port and the scheduler port both resolve to the same physical Redis instance (the queues instance, see Stack above) — a separate instance from the one behind the cache port.
+A recurring job fires on its own schedule inside the worker process (no inbound HTTP request involved), calls into the same Application-layer use case a manual recomputation would, and follows the same path down through the lock port and repository/cache ports. The lock port and the scheduler port both resolve to the same physical Redis instance (the queues instance, see Stack above) — a separate instance from the one behind the cache port.
+
+The process split exists because the two have different lifecycles: the api process is stateless request handling with no coordination role of its own, while several instances of the worker process are expected to run concurrently against the same report definitions — that's the situation the distributed lock and fencing token exist to arbitrate (see Cross-cutting patterns below). Keeping worker a separate process from api is what lets worker instances be started, stopped, or scaled independently, without affecting request handling.
 
 ## Infrastructure
 
-Nothing is provisioned yet — the repository was fully purged and this section describes the intended provisioning for the earliest build phase, not current state. The intended local layout: a Postgres service and two Redis services — one for queues and locks, one for cache — each with its own Docker Compose service definition and environment configuration, wrapped by a root Compose entrypoint and a task-runner file for bringing the whole stack up or down. No hosted/remote environment exists — this project runs entirely as local containers.
+A Postgres service and two Redis services — one for queues and locks, one for cache — each run as their own Docker Compose service definition, wrapped by a root Compose entrypoint that includes them. No hosted/remote environment exists — this is local-only infrastructure for a single developer.
+
+The api and worker processes themselves are not containerized — both run directly on the host against that containerized infra, the same way a single combined process would have. Containerizing them is deferred rather than ruled out: nothing about the topology forces it, and it isn't needed until there's a deployment target beyond local development.
 
 ## Cross-cutting patterns
 
@@ -56,4 +70,4 @@ report:snapshot:{reportId}:v{definitionVersion}   # cached, versioned report res
 
 ## Non-goals
 
-- No rate limiting, throttling, or public-network hardening — this system has no publicly reachable surface; it runs entirely as local containers for a single developer.
+- No rate limiting, throttling, or public-network hardening — this system has no publicly reachable surface; it runs entirely on a single developer's machine, against local containerized infra.
