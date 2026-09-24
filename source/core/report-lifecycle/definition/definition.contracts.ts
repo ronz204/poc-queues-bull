@@ -6,7 +6,7 @@ export interface ReportDefinitionListFilter {
 	status?: ReportDefinitionStatus;
 }
 
-export interface ReportDefinitionStore {
+export interface IReportDefinitionStore {
 	create(definition: ReportDefinition): Promise<void>;
 
 	update(definition: ReportDefinition): Promise<void>;

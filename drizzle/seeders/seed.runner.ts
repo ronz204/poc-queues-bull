@@ -1,19 +1,19 @@
-import type { Db } from "@drizz/dal/drizzle.client";
-import type { UnitOfWork } from "@drizz/dal/drizzle.work";
+import type { Executor } from "@drizz/helpers/executor.helper";
 import type { ProductsSeeder } from "./products.seeder";
 import type { RegionsSeeder } from "./regions.seeder";
 import type { SalesSeeder } from "./sales.seeder";
 
 interface Seeder {
 	readonly name: string;
-	run(db: Db): Promise<unknown>;
+	run(db: Executor): Promise<unknown>;
 }
 
+// Never opens its own transaction: the Drizzler run that resolves it owns the boundary.
 export class SeedRunner {
 	private readonly seeders: readonly Seeder[];
 
 	constructor(
-		private readonly uow: UnitOfWork,
+		private readonly tx: Executor,
 		products: ProductsSeeder,
 		regions: RegionsSeeder,
 		sales: SalesSeeder,
@@ -24,14 +24,12 @@ export class SeedRunner {
 	async run() {
 		console.log(`🌱 seeding ${this.seeders.length} tables...`);
 
-		await this.uow.run(async (db) => {
-			for (const seeder of this.seeders) {
-				const startedAt = performance.now();
-				process.stdout.write(`   → ${seeder.name}... `);
-				await seeder.run(db);
-				console.log(`done (${Math.round(performance.now() - startedAt)}ms)`);
-			}
-		});
+		for (const seeder of this.seeders) {
+			const startedAt = performance.now();
+			process.stdout.write(`   → ${seeder.name}... `);
+			await seeder.run(this.tx);
+			console.log(`done (${Math.round(performance.now() - startedAt)}ms)`);
+		}
 
 		console.log("✅ seeding complete");
 	}

@@ -1,11 +1,11 @@
-import { generateId } from "@drizz/database/helpers/column.helper";
-import { sales } from "@drizz/database/helpers/existing.helper";
+import { generateId } from "@drizz/helpers/column.helper";
+import { sales } from "@drizz/helpers/existing.helper";
 import * as pg from "drizzle-orm/pg-core";
 import { products } from "./products.model";
 import { regions } from "./regions.model";
 
-export const saleTransactions = sales.table(
-	"sale_transactions",
+export const transactions = sales.table(
+	"transactions",
 	{
 		id: pg.uuid("id").primaryKey().$defaultFn(generateId),
 		productId: pg.uuid("product_id").notNull(),
@@ -15,12 +15,12 @@ export const saleTransactions = sales.table(
 		createdAt: pg.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 	},
 	(table) => [
-		pg.index("sale_transactions_occurred_at_idx").on(table.occurredAt),
-		pg.index("sale_transactions_product_id_idx").on(table.productId),
-		pg.index("sale_transactions_region_id_idx").on(table.regionId),
+		pg.index("transactions_occurred_at_idx").on(table.occurredAt),
+		pg.index("transactions_product_id_idx").on(table.productId),
+		pg.index("transactions_region_id_idx").on(table.regionId),
 		pg
 			.foreignKey({
-				name: "sale_transactions_product_id_fk",
+				name: "transactions_product_id_fk",
 				columns: [table.productId],
 				foreignColumns: [products.id],
 			})
@@ -28,7 +28,7 @@ export const saleTransactions = sales.table(
 			.onUpdate("restrict"),
 		pg
 			.foreignKey({
-				name: "sale_transactions_region_id_fk",
+				name: "transactions_region_id_fk",
 				columns: [table.regionId],
 				foreignColumns: [regions.id],
 			})

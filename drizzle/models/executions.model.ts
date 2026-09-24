@@ -1,7 +1,7 @@
-import { generateId } from "@drizz/database/helpers/column.helper";
-import { reports } from "@drizz/database/helpers/existing.helper";
+import { generateId } from "@drizz/helpers/column.helper";
+import { reports } from "@drizz/helpers/existing.helper";
 import * as pg from "drizzle-orm/pg-core";
-import { reportDefinitions } from "./report-definitions.model";
+import { definitions } from "./definitions.model";
 
 export const executionTriggerType = reports.enum("execution_trigger_type", ["cron", "manual"]);
 
@@ -12,12 +12,12 @@ export const executionStatus = reports.enum("execution_status", [
 	"failed",
 ]);
 
-export const reportExecutions = reports.table(
-	"report_executions",
+export const executions = reports.table(
+	"executions",
 	{
 		id: pg.uuid("id").primaryKey().$defaultFn(generateId),
-		reportDefinitionId: pg.uuid("report_definition_id").notNull(),
-		reportDefinitionVersion: pg.integer("report_definition_version").notNull(),
+		definitionId: pg.uuid("definition_id").notNull(),
+		definitionVersion: pg.integer("definition_version").notNull(),
 		triggerType: executionTriggerType("trigger_type").notNull(),
 		scheduledFor: pg.timestamp("scheduled_for", { withTimezone: true }).notNull(),
 		status: executionStatus("status").notNull().default("pending"),
@@ -31,18 +31,13 @@ export const reportExecutions = reports.table(
 	},
 	(table) => [
 		pg
-			.uniqueIndex("report_executions_idempotency_idx")
-			.on(
-				table.reportDefinitionId,
-				table.reportDefinitionVersion,
-				table.triggerType,
-				table.scheduledFor,
-			),
+			.uniqueIndex("executions_idempotency_idx")
+			.on(table.definitionId, table.definitionVersion, table.triggerType, table.scheduledFor),
 		pg
 			.foreignKey({
-				name: "report_executions_report_definition_id_fk",
-				columns: [table.reportDefinitionId],
-				foreignColumns: [reportDefinitions.id],
+				name: "executions_definition_id_fk",
+				columns: [table.definitionId],
+				foreignColumns: [definitions.id],
 			})
 			.onDelete("restrict")
 			.onUpdate("restrict"),

@@ -1,7 +1,7 @@
 {
 	"version": "8",
 	"dialect": "postgres",
-	"id": "56c8be3f-153d-4d72-a9dc-38f4eeaf1d1d",
+	"id": "febe9637-c41e-4033-83b1-4df825cadb29",
 	"prevIds": ["00000000-0000-0000-0000-000000000000"],
 	"ddl": [
 		{
@@ -11,14 +11,14 @@
 			"schema": "reports"
 		},
 		{
-			"values": ["product", "region", "day", "week", "month"],
-			"name": "group_by_dimension",
+			"values": ["active", "archived"],
+			"name": "definition_status",
 			"entityType": "enums",
 			"schema": "reports"
 		},
 		{
-			"values": ["active", "archived"],
-			"name": "report_definition_status",
+			"values": ["product", "region", "day", "week", "month"],
+			"name": "group_by_dimension",
 			"entityType": "enums",
 			"schema": "reports"
 		},
@@ -36,6 +36,18 @@
 		},
 		{
 			"isRlsEnabled": false,
+			"name": "definitions",
+			"entityType": "tables",
+			"schema": "reports"
+		},
+		{
+			"isRlsEnabled": false,
+			"name": "executions",
+			"entityType": "tables",
+			"schema": "reports"
+		},
+		{
+			"isRlsEnabled": false,
 			"name": "products",
 			"entityType": "tables",
 			"schema": "sales"
@@ -48,19 +60,7 @@
 		},
 		{
 			"isRlsEnabled": false,
-			"name": "report_definitions",
-			"entityType": "tables",
-			"schema": "reports"
-		},
-		{
-			"isRlsEnabled": false,
-			"name": "report_executions",
-			"entityType": "tables",
-			"schema": "reports"
-		},
-		{
-			"isRlsEnabled": false,
-			"name": "sale_transactions",
+			"name": "transactions",
 			"entityType": "tables",
 			"schema": "sales"
 		},
@@ -74,60 +74,8 @@
 			"identity": null,
 			"name": "id",
 			"entityType": "columns",
-			"schema": "sales",
-			"table": "products"
-		},
-		{
-			"type": "text",
-			"typeSchema": null,
-			"notNull": true,
-			"dimensions": 0,
-			"default": null,
-			"generated": null,
-			"identity": null,
-			"name": "name",
-			"entityType": "columns",
-			"schema": "sales",
-			"table": "products"
-		},
-		{
-			"type": "uuid",
-			"typeSchema": null,
-			"notNull": true,
-			"dimensions": 0,
-			"default": null,
-			"generated": null,
-			"identity": null,
-			"name": "id",
-			"entityType": "columns",
-			"schema": "sales",
-			"table": "regions"
-		},
-		{
-			"type": "text",
-			"typeSchema": null,
-			"notNull": true,
-			"dimensions": 0,
-			"default": null,
-			"generated": null,
-			"identity": null,
-			"name": "name",
-			"entityType": "columns",
-			"schema": "sales",
-			"table": "regions"
-		},
-		{
-			"type": "uuid",
-			"typeSchema": null,
-			"notNull": true,
-			"dimensions": 0,
-			"default": null,
-			"generated": null,
-			"identity": null,
-			"name": "id",
-			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
 			"type": "text",
@@ -140,7 +88,7 @@
 			"name": "name",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
 			"type": "aggregation_type",
@@ -153,7 +101,7 @@
 			"name": "aggregation_type",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
 			"type": "group_by_dimension",
@@ -166,7 +114,7 @@
 			"name": "group_by",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
 			"type": "timestamp with time zone",
@@ -179,7 +127,7 @@
 			"name": "window_start",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
 			"type": "timestamp with time zone",
@@ -192,7 +140,7 @@
 			"name": "window_end",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
 			"type": "text",
@@ -205,7 +153,7 @@
 			"name": "cron_expression",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
 			"type": "integer",
@@ -218,10 +166,10 @@
 			"name": "version",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
-			"type": "report_definition_status",
+			"type": "definition_status",
 			"typeSchema": "reports",
 			"notNull": true,
 			"dimensions": 0,
@@ -231,7 +179,7 @@
 			"name": "status",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
 			"type": "timestamp with time zone",
@@ -244,7 +192,7 @@
 			"name": "created_at",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
 			"type": "timestamp with time zone",
@@ -257,7 +205,7 @@
 			"name": "updated_at",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
 			"type": "uuid",
@@ -270,7 +218,7 @@
 			"name": "id",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "uuid",
@@ -280,10 +228,10 @@
 			"default": null,
 			"generated": null,
 			"identity": null,
-			"name": "report_definition_id",
+			"name": "definition_id",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "integer",
@@ -293,10 +241,10 @@
 			"default": null,
 			"generated": null,
 			"identity": null,
-			"name": "report_definition_version",
+			"name": "definition_version",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "execution_trigger_type",
@@ -309,7 +257,7 @@
 			"name": "trigger_type",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "timestamp with time zone",
@@ -322,7 +270,7 @@
 			"name": "scheduled_for",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "execution_status",
@@ -335,7 +283,7 @@
 			"name": "status",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "text",
@@ -348,7 +296,7 @@
 			"name": "worker_id",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "bigint",
@@ -361,7 +309,7 @@
 			"name": "fencing_token",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "jsonb",
@@ -374,7 +322,7 @@
 			"name": "result",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "text",
@@ -387,7 +335,7 @@
 			"name": "error_message",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "timestamp with time zone",
@@ -400,7 +348,7 @@
 			"name": "started_at",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "timestamp with time zone",
@@ -413,7 +361,7 @@
 			"name": "finished_at",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "timestamp with time zone",
@@ -426,7 +374,7 @@
 			"name": "created_at",
 			"entityType": "columns",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"type": "uuid",
@@ -439,7 +387,59 @@
 			"name": "id",
 			"entityType": "columns",
 			"schema": "sales",
-			"table": "sale_transactions"
+			"table": "products"
+		},
+		{
+			"type": "text",
+			"typeSchema": null,
+			"notNull": true,
+			"dimensions": 0,
+			"default": null,
+			"generated": null,
+			"identity": null,
+			"name": "name",
+			"entityType": "columns",
+			"schema": "sales",
+			"table": "products"
+		},
+		{
+			"type": "uuid",
+			"typeSchema": null,
+			"notNull": true,
+			"dimensions": 0,
+			"default": null,
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"entityType": "columns",
+			"schema": "sales",
+			"table": "regions"
+		},
+		{
+			"type": "text",
+			"typeSchema": null,
+			"notNull": true,
+			"dimensions": 0,
+			"default": null,
+			"generated": null,
+			"identity": null,
+			"name": "name",
+			"entityType": "columns",
+			"schema": "sales",
+			"table": "regions"
+		},
+		{
+			"type": "uuid",
+			"typeSchema": null,
+			"notNull": true,
+			"dimensions": 0,
+			"default": null,
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"entityType": "columns",
+			"schema": "sales",
+			"table": "transactions"
 		},
 		{
 			"type": "uuid",
@@ -452,7 +452,7 @@
 			"name": "product_id",
 			"entityType": "columns",
 			"schema": "sales",
-			"table": "sale_transactions"
+			"table": "transactions"
 		},
 		{
 			"type": "uuid",
@@ -465,7 +465,7 @@
 			"name": "region_id",
 			"entityType": "columns",
 			"schema": "sales",
-			"table": "sale_transactions"
+			"table": "transactions"
 		},
 		{
 			"type": "numeric(12,2)",
@@ -478,7 +478,7 @@
 			"name": "amount",
 			"entityType": "columns",
 			"schema": "sales",
-			"table": "sale_transactions"
+			"table": "transactions"
 		},
 		{
 			"type": "timestamp with time zone",
@@ -491,7 +491,7 @@
 			"name": "occurred_at",
 			"entityType": "columns",
 			"schema": "sales",
-			"table": "sale_transactions"
+			"table": "transactions"
 		},
 		{
 			"type": "timestamp with time zone",
@@ -504,7 +504,7 @@
 			"name": "created_at",
 			"entityType": "columns",
 			"schema": "sales",
-			"table": "sale_transactions"
+			"table": "transactions"
 		},
 		{
 			"nameExplicit": true,
@@ -522,23 +522,23 @@
 			"with": "",
 			"method": "btree",
 			"concurrently": false,
-			"name": "report_definitions_active_name_idx",
+			"name": "definitions_active_name_idx",
 			"entityType": "indexes",
 			"schema": "reports",
-			"table": "report_definitions"
+			"table": "definitions"
 		},
 		{
 			"nameExplicit": true,
 			"columns": [
 				{
-					"value": "report_definition_id",
+					"value": "definition_id",
 					"isExpression": false,
 					"asc": true,
 					"nullsFirst": false,
 					"opclass": null
 				},
 				{
-					"value": "report_definition_version",
+					"value": "definition_version",
 					"isExpression": false,
 					"asc": true,
 					"nullsFirst": false,
@@ -564,10 +564,10 @@
 			"with": "",
 			"method": "btree",
 			"concurrently": false,
-			"name": "report_executions_idempotency_idx",
+			"name": "executions_idempotency_idx",
 			"entityType": "indexes",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"nameExplicit": true,
@@ -585,10 +585,10 @@
 			"with": "",
 			"method": "btree",
 			"concurrently": false,
-			"name": "sale_transactions_occurred_at_idx",
+			"name": "transactions_occurred_at_idx",
 			"entityType": "indexes",
 			"schema": "sales",
-			"table": "sale_transactions"
+			"table": "transactions"
 		},
 		{
 			"nameExplicit": true,
@@ -606,10 +606,10 @@
 			"with": "",
 			"method": "btree",
 			"concurrently": false,
-			"name": "sale_transactions_product_id_idx",
+			"name": "transactions_product_id_idx",
 			"entityType": "indexes",
 			"schema": "sales",
-			"table": "sale_transactions"
+			"table": "transactions"
 		},
 		{
 			"nameExplicit": true,
@@ -627,23 +627,23 @@
 			"with": "",
 			"method": "btree",
 			"concurrently": false,
-			"name": "sale_transactions_region_id_idx",
+			"name": "transactions_region_id_idx",
 			"entityType": "indexes",
 			"schema": "sales",
-			"table": "sale_transactions"
+			"table": "transactions"
 		},
 		{
 			"nameExplicit": true,
-			"columns": ["report_definition_id"],
+			"columns": ["definition_id"],
 			"schemaTo": "reports",
-			"tableTo": "report_definitions",
+			"tableTo": "definitions",
 			"columnsTo": ["id"],
 			"onUpdate": "RESTRICT",
 			"onDelete": "RESTRICT",
-			"name": "report_executions_report_definition_id_fk",
+			"name": "executions_definition_id_fk",
 			"entityType": "fks",
 			"schema": "reports",
-			"table": "report_executions"
+			"table": "executions"
 		},
 		{
 			"nameExplicit": true,
@@ -653,10 +653,10 @@
 			"columnsTo": ["id"],
 			"onUpdate": "RESTRICT",
 			"onDelete": "RESTRICT",
-			"name": "sale_transactions_product_id_fk",
+			"name": "transactions_product_id_fk",
 			"entityType": "fks",
 			"schema": "sales",
-			"table": "sale_transactions"
+			"table": "transactions"
 		},
 		{
 			"nameExplicit": true,
@@ -666,10 +666,26 @@
 			"columnsTo": ["id"],
 			"onUpdate": "RESTRICT",
 			"onDelete": "RESTRICT",
-			"name": "sale_transactions_region_id_fk",
+			"name": "transactions_region_id_fk",
 			"entityType": "fks",
 			"schema": "sales",
-			"table": "sale_transactions"
+			"table": "transactions"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "definitions_pkey",
+			"schema": "reports",
+			"table": "definitions",
+			"entityType": "pks"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "executions_pkey",
+			"schema": "reports",
+			"table": "executions",
+			"entityType": "pks"
 		},
 		{
 			"columns": ["id"],
@@ -690,25 +706,9 @@
 		{
 			"columns": ["id"],
 			"nameExplicit": false,
-			"name": "report_definitions_pkey",
-			"schema": "reports",
-			"table": "report_definitions",
-			"entityType": "pks"
-		},
-		{
-			"columns": ["id"],
-			"nameExplicit": false,
-			"name": "report_executions_pkey",
-			"schema": "reports",
-			"table": "report_executions",
-			"entityType": "pks"
-		},
-		{
-			"columns": ["id"],
-			"nameExplicit": false,
-			"name": "sale_transactions_pkey",
+			"name": "transactions_pkey",
 			"schema": "sales",
-			"table": "sale_transactions",
+			"table": "transactions",
 			"entityType": "pks"
 		},
 		{

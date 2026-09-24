@@ -1,24 +1,24 @@
-import type { Db } from "@drizz/dal/drizzle.client";
-import { products } from "@drizz/database/models/products.model";
-import { regions } from "@drizz/database/models/regions.model";
-import { saleTransactions } from "@drizz/database/models/sale-transactions.model";
+import type { Executor } from "@drizz/helpers/executor.helper";
+import { products } from "@drizz/models/products.model";
+import { regions } from "@drizz/models/regions.model";
+import { transactions } from "@drizz/models/transactions.model";
 import { seed } from "drizzle-seed";
 
 const TRANSACTION_COUNT = 5_000;
 const OCCURRED_AT_WINDOW_DAYS = 90;
 
 export class SalesSeeder {
-	readonly name = "sale_transactions";
+	readonly name = "transactions";
 
-	async run(db: Db) {
+	async run(db: Executor) {
 		const productIds = (await db.select({ id: products.id }).from(products)).map((row) => row.id);
 		const regionIds = (await db.select({ id: regions.id }).from(regions)).map((row) => row.id);
 
 		const now = new Date();
 		const windowStart = new Date(now.getTime() - OCCURRED_AT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
-		await seed(db, { saleTransactions }).refine((funcs) => ({
-			saleTransactions: {
+		await seed(db, { transactions }).refine((funcs) => ({
+			transactions: {
 				count: TRANSACTION_COUNT,
 				columns: {
 					productId: funcs.valuesFromArray({ values: productIds }),
