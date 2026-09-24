@@ -1,9 +1,9 @@
-import { InvalidSaleAmountError } from "./sale-transaction.errors";
+import { InvalidSaleAmountError } from "./transaction.errors";
 import type {
 	GenerateSaleTransactionProps,
 	SaleTransactionSnapshotProps,
-} from "./sale-transaction.types";
-import { ProductId, RegionId, SaleTransactionId } from "./sale-transaction.vos";
+} from "./transaction.types";
+import { ProductId, RegionId, SaleTransactionId } from "./transaction.vos";
 
 export class SaleTransaction {
 	readonly id: SaleTransactionId;

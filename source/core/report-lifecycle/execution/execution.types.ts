@@ -1,4 +1,4 @@
-import type { ExecutionStatus, TriggerType } from "./report-execution.enums";
+import type { ExecutionStatus, TriggerType } from "./execution.enums";
 
 export interface TriggerReportExecutionProps {
 	id: string;

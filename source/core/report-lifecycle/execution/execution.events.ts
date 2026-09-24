@@ -1,4 +1,4 @@
-import type { ReportSnapshot } from "./report-execution.vos";
+import type { ReportSnapshot } from "./execution.vos";
 
 export class ReportExecutionSucceededEvent {
 	readonly type = "report-execution.succeeded" as const;

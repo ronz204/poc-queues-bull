@@ -1,8 +1,4 @@
-import type {
-	AggregationType,
-	GroupByDimension,
-	ReportDefinitionStatus,
-} from "./report-definition.enums";
+import type { AggregationType, GroupByDimension, ReportDefinitionStatus } from "./definition.enums";
 
 export interface ReportDefinitionConfigProps {
 	name: string;

@@ -1,16 +1,12 @@
-import type {
-	AggregationType,
-	GroupByDimension,
-	ReportDefinitionStatus,
-} from "./report-definition.enums";
-import { ArchivedReportDefinitionError } from "./report-definition.errors";
-import { ReportDefinitionChangedEvent } from "./report-definition.events";
+import type { AggregationType, GroupByDimension, ReportDefinitionStatus } from "./definition.enums";
+import { ArchivedReportDefinitionError } from "./definition.errors";
+import { ReportDefinitionChangedEvent } from "./definition.events";
 import type {
 	CreateReportDefinitionProps,
 	EditReportDefinitionProps,
 	ReportDefinitionSnapshotProps,
-} from "./report-definition.types";
-import { CronExpression, ReportDefinitionId, ReportWindow } from "./report-definition.vos";
+} from "./definition.types";
+import { CronExpression, ReportDefinitionId, ReportWindow } from "./definition.vos";
 
 type ReportDefinitionEditResult = {
 	definition: ReportDefinition;

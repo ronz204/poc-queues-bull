@@ -1,4 +1,4 @@
-import type { ExecutionStatus } from "./report-execution.enums";
+import type { ExecutionStatus } from "./execution.enums";
 
 export class InvalidExecutionTransitionError extends Error {
 	constructor(

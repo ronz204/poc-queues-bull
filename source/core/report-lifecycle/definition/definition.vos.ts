@@ -1,5 +1,5 @@
 import { assertUuid, UniqueUUID } from "@core/common-domain";
-import { InvalidCronExpressionError, InvalidReportWindowError } from "./report-definition.errors";
+import { InvalidCronExpressionError, InvalidReportWindowError } from "./definition.errors";
 
 const CRON_FIELD_PATTERN = /^(\*|[0-9,\-/]+)$/;
 

@@ -1,2 +1,2 @@
-export * from "./contexts/identifier.errors";
-export * from "./contexts/identifier.vos";
+export * from "./identifier/identifier.errors";
+export * from "./identifier/identifier.vos";
