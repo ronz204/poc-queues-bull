@@ -5,10 +5,9 @@ import type { SalesSeeder } from "./sales.seeder";
 
 interface Seeder {
 	readonly name: string;
-	run(db: Executor): Promise<unknown>;
+	run(db: Executor): Promise<void>;
 }
 
-// Never opens its own transaction: the Drizzler run that resolves it owns the boundary.
 export class SeedRunner {
 	private readonly seeders: readonly Seeder[];
 
