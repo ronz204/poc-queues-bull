@@ -12,4 +12,4 @@ export const GROUP_BY_DIMENSIONS: readonly GroupByDimension[] = [
 	"month",
 ];
 
-export type ReportDefinitionStatus = "active" | "archived";
+export type DefinitionStatus = "active" | "archived";

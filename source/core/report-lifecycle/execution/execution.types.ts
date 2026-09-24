@@ -1,17 +1,17 @@
 import type { ExecutionStatus, TriggerType } from "./execution.enums";
 
-export interface TriggerReportExecutionProps {
+export interface TriggerExecutionProps {
 	id: string;
-	reportDefinitionId: string;
-	reportDefinitionVersion: number;
+	definitionId: string;
+	definitionVersion: number;
 	triggerType: TriggerType;
 	scheduledFor: Date;
 }
 
-export interface ReportExecutionSnapshotProps {
+export interface ExecutionSnapshotProps {
 	id: string;
-	reportDefinitionId: string;
-	reportDefinitionVersion: number;
+	definitionId: string;
+	definitionVersion: number;
 	triggerType: TriggerType;
 	scheduledFor: Date;
 	status: ExecutionStatus;

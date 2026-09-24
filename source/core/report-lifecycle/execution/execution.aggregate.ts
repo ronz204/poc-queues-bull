@@ -1,19 +1,19 @@
 import type { ExecutionStatus, TriggerType } from "./execution.enums";
 import { InvalidExecutionTransitionError } from "./execution.errors";
-import { ReportExecutionFailedEvent, ReportExecutionSucceededEvent } from "./execution.events";
-import type { ReportExecutionSnapshotProps, TriggerReportExecutionProps } from "./execution.types";
-import { ReportExecutionId, type ReportSnapshot } from "./execution.vos";
+import { ExecutionFailedEvent, ExecutionSucceededEvent } from "./execution.events";
+import type { ExecutionSnapshotProps, TriggerExecutionProps } from "./execution.types";
+import { ExecutionId, type ReportSnapshot } from "./execution.vos";
 
-type ReportExecutionSucceedResult = {
-	execution: ReportExecution;
-	event: ReportExecutionSucceededEvent;
+type ExecutionSucceedResult = {
+	execution: Execution;
+	event: ExecutionSucceededEvent;
 };
-type ReportExecutionFailResult = { execution: ReportExecution; event: ReportExecutionFailedEvent };
+type ExecutionFailResult = { execution: Execution; event: ExecutionFailedEvent };
 
-export class ReportExecution {
-	readonly id: ReportExecutionId;
-	readonly reportDefinitionId: string;
-	readonly reportDefinitionVersion: number;
+export class Execution {
+	readonly id: ExecutionId;
+	readonly definitionId: string;
+	readonly definitionVersion: number;
 	readonly triggerType: TriggerType;
 	readonly scheduledFor: Date;
 	readonly status: ExecutionStatus;
@@ -25,10 +25,10 @@ export class ReportExecution {
 	readonly finishedAt: Date | null;
 	readonly createdAt: Date;
 
-	private constructor(props: ReportExecutionSnapshotProps) {
-		this.id = ReportExecutionId.from(props.id);
-		this.reportDefinitionId = props.reportDefinitionId;
-		this.reportDefinitionVersion = props.reportDefinitionVersion;
+	private constructor(props: ExecutionSnapshotProps) {
+		this.id = ExecutionId.from(props.id);
+		this.definitionId = props.definitionId;
+		this.definitionVersion = props.definitionVersion;
 		this.triggerType = props.triggerType;
 		this.scheduledFor = props.scheduledFor;
 		this.status = props.status;
@@ -41,8 +41,8 @@ export class ReportExecution {
 		this.createdAt = props.createdAt;
 	}
 
-	public static trigger(props: TriggerReportExecutionProps): ReportExecution {
-		return ReportExecution.reconstitute({
+	public static trigger(props: TriggerExecutionProps): Execution {
+		return Execution.reconstitute({
 			...props,
 			status: "pending",
 			workerId: null,
@@ -55,11 +55,11 @@ export class ReportExecution {
 		});
 	}
 
-	public static reconstitute(snapshot: ReportExecutionSnapshotProps): ReportExecution {
-		return new ReportExecution(snapshot);
+	public static reconstitute(snapshot: ExecutionSnapshotProps): Execution {
+		return new Execution(snapshot);
 	}
 
-	public start(workerId: string): ReportExecution {
+	public start(workerId: string): Execution {
 		if (this.status !== "pending") {
 			throw new InvalidExecutionTransitionError(this.status, "running");
 		}
@@ -67,7 +67,7 @@ export class ReportExecution {
 		return this.with({ status: "running", workerId, startedAt: new Date() });
 	}
 
-	public succeed(snapshot: ReportSnapshot): ReportExecutionSucceedResult {
+	public succeed(snapshot: ReportSnapshot): ExecutionSucceedResult {
 		if (this.status !== "running") {
 			throw new InvalidExecutionTransitionError(this.status, "succeeded");
 		}
@@ -80,10 +80,10 @@ export class ReportExecution {
 			errorMessage: null,
 			finishedAt,
 		});
-		const event = new ReportExecutionSucceededEvent(
+		const event = new ExecutionSucceededEvent(
 			this.id.value,
-			this.reportDefinitionId,
-			this.reportDefinitionVersion,
+			this.definitionId,
+			this.definitionVersion,
 			snapshot,
 			finishedAt,
 		);
@@ -91,16 +91,16 @@ export class ReportExecution {
 		return { execution, event };
 	}
 
-	public fail(errorMessage: string): ReportExecutionFailResult {
+	public fail(errorMessage: string): ExecutionFailResult {
 		if (this.status !== "running") {
 			throw new InvalidExecutionTransitionError(this.status, "failed");
 		}
 
 		const finishedAt = new Date();
 		const execution = this.with({ status: "failed", errorMessage, finishedAt });
-		const event = new ReportExecutionFailedEvent(
+		const event = new ExecutionFailedEvent(
 			this.id.value,
-			this.reportDefinitionId,
+			this.definitionId,
 			errorMessage,
 			finishedAt,
 		);
@@ -109,8 +109,8 @@ export class ReportExecution {
 	}
 
 	// A queue-driven backoff retry of the same attempt — see report-lifecycle.spec.md Invariant 13.
-	// Never adjusts reportDefinitionVersion/scheduledFor/triggerType: those stay frozen from trigger().
-	public retry(): ReportExecution {
+	// Never adjusts definitionVersion/scheduledFor/triggerType: those stay frozen from trigger().
+	public retry(): Execution {
 		if (this.status !== "failed") {
 			throw new InvalidExecutionTransitionError(this.status, "pending");
 		}
@@ -118,11 +118,11 @@ export class ReportExecution {
 		return this.with({ status: "pending", errorMessage: null, finishedAt: null });
 	}
 
-	public toSnapshot(): ReportExecutionSnapshotProps {
+	public toSnapshot(): ExecutionSnapshotProps {
 		return {
 			id: this.id.value,
-			reportDefinitionId: this.reportDefinitionId,
-			reportDefinitionVersion: this.reportDefinitionVersion,
+			definitionId: this.definitionId,
+			definitionVersion: this.definitionVersion,
 			triggerType: this.triggerType,
 			scheduledFor: this.scheduledFor,
 			status: this.status,
@@ -136,7 +136,7 @@ export class ReportExecution {
 		};
 	}
 
-	private with(patch: Partial<ReportExecutionSnapshotProps>): ReportExecution {
-		return ReportExecution.reconstitute({ ...this.toSnapshot(), ...patch });
+	private with(patch: Partial<ExecutionSnapshotProps>): Execution {
+		return Execution.reconstitute({ ...this.toSnapshot(), ...patch });
 	}
 }

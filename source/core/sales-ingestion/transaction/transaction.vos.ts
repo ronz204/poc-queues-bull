@@ -1,9 +1,9 @@
 import { assertUuid, UniqueUUID } from "@core/common-domain";
 
-export class SaleTransactionId extends UniqueUUID {
-	public static from(value: string): SaleTransactionId {
-		assertUuid(value, "SaleTransactionId");
-		return new SaleTransactionId(value);
+export class TransactionId extends UniqueUUID {
+	public static from(value: string): TransactionId {
+		assertUuid(value, "TransactionId");
+		return new TransactionId(value);
 	}
 }
 

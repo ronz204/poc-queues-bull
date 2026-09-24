@@ -8,10 +8,10 @@ function isSyntacticallyValidCron(expression: string): boolean {
 	return fields.length === 5 && fields.every((field) => CRON_FIELD_PATTERN.test(field));
 }
 
-export class ReportDefinitionId extends UniqueUUID {
-	public static from(value: string): ReportDefinitionId {
-		assertUuid(value, "ReportDefinitionId");
-		return new ReportDefinitionId(value);
+export class DefinitionId extends UniqueUUID {
+	public static from(value: string): DefinitionId {
+		assertUuid(value, "DefinitionId");
+		return new DefinitionId(value);
 	}
 }
 

@@ -1,32 +1,32 @@
-import type { AggregationType, GroupByDimension, ReportDefinitionStatus } from "./definition.enums";
-import { ArchivedReportDefinitionError } from "./definition.errors";
-import { ReportDefinitionChangedEvent } from "./definition.events";
+import type { AggregationType, DefinitionStatus, GroupByDimension } from "./definition.enums";
+import { ArchivedDefinitionError } from "./definition.errors";
+import { DefinitionChangedEvent } from "./definition.events";
 import type {
-	CreateReportDefinitionProps,
-	EditReportDefinitionProps,
-	ReportDefinitionSnapshotProps,
+	CreateDefinitionProps,
+	DefinitionSnapshotProps,
+	EditDefinitionProps,
 } from "./definition.types";
-import { CronExpression, ReportDefinitionId, ReportWindow } from "./definition.vos";
+import { CronExpression, DefinitionId, ReportWindow } from "./definition.vos";
 
-type ReportDefinitionEditResult = {
-	definition: ReportDefinition;
-	event: ReportDefinitionChangedEvent;
+type DefinitionEditResult = {
+	definition: Definition;
+	event: DefinitionChangedEvent;
 };
 
-export class ReportDefinition {
-	readonly id: ReportDefinitionId;
+export class Definition {
+	readonly id: DefinitionId;
 	readonly name: string;
 	readonly aggregationType: AggregationType;
 	readonly groupBy: GroupByDimension;
 	readonly window: ReportWindow;
 	readonly cronExpression: CronExpression;
 	readonly version: number;
-	readonly status: ReportDefinitionStatus;
+	readonly status: DefinitionStatus;
 	readonly createdAt: Date;
 	readonly updatedAt: Date;
 
-	private constructor(props: ReportDefinitionSnapshotProps) {
-		this.id = ReportDefinitionId.from(props.id);
+	private constructor(props: DefinitionSnapshotProps) {
+		this.id = DefinitionId.from(props.id);
 		this.name = props.name;
 		this.aggregationType = props.aggregationType;
 		this.groupBy = props.groupBy;
@@ -38,9 +38,9 @@ export class ReportDefinition {
 		this.updatedAt = props.updatedAt;
 	}
 
-	public static create(props: CreateReportDefinitionProps): ReportDefinition {
+	public static create(props: CreateDefinitionProps): Definition {
 		const now = new Date();
-		return ReportDefinition.reconstitute({
+		return Definition.reconstitute({
 			...props,
 			version: 1,
 			status: "active",
@@ -49,13 +49,13 @@ export class ReportDefinition {
 		});
 	}
 
-	public static reconstitute(snapshot: ReportDefinitionSnapshotProps): ReportDefinition {
-		return new ReportDefinition(snapshot);
+	public static reconstitute(snapshot: DefinitionSnapshotProps): Definition {
+		return new Definition(snapshot);
 	}
 
-	public edit(props: EditReportDefinitionProps): ReportDefinitionEditResult {
+	public edit(props: EditDefinitionProps): DefinitionEditResult {
 		if (this.status === "archived") {
-			throw new ArchivedReportDefinitionError(this.id.value);
+			throw new ArchivedDefinitionError(this.id.value);
 		}
 
 		const updatedAt = new Date();
@@ -64,7 +64,7 @@ export class ReportDefinition {
 			version: this.version + 1,
 			updatedAt,
 		});
-		const event = new ReportDefinitionChangedEvent(
+		const event = new DefinitionChangedEvent(
 			this.id.value,
 			definition.version,
 			definition.cronExpression.value,
@@ -74,15 +74,15 @@ export class ReportDefinition {
 		return { definition, event };
 	}
 
-	public archive(): ReportDefinition {
+	public archive(): Definition {
 		if (this.status === "archived") {
-			throw new ArchivedReportDefinitionError(this.id.value);
+			throw new ArchivedDefinitionError(this.id.value);
 		}
 
 		return this.with({ status: "archived", updatedAt: new Date() });
 	}
 
-	public toSnapshot(): ReportDefinitionSnapshotProps {
+	public toSnapshot(): DefinitionSnapshotProps {
 		return {
 			id: this.id.value,
 			name: this.name,
@@ -98,7 +98,7 @@ export class ReportDefinition {
 		};
 	}
 
-	private with(patch: Partial<ReportDefinitionSnapshotProps>): ReportDefinition {
-		return ReportDefinition.reconstitute({ ...this.toSnapshot(), ...patch });
+	private with(patch: Partial<DefinitionSnapshotProps>): Definition {
+		return Definition.reconstitute({ ...this.toSnapshot(), ...patch });
 	}
 }

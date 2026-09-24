@@ -1,23 +1,23 @@
 import type { ReportSnapshot } from "./execution.vos";
 
-export class ReportExecutionSucceededEvent {
-	readonly type = "report-execution.succeeded" as const;
+export class ExecutionSucceededEvent {
+	readonly type = "execution.succeeded" as const;
 
 	constructor(
-		readonly reportExecutionId: string,
-		readonly reportDefinitionId: string,
-		readonly reportDefinitionVersion: number,
+		readonly executionId: string,
+		readonly definitionId: string,
+		readonly definitionVersion: number,
 		readonly snapshot: ReportSnapshot,
 		readonly occurredAt: Date,
 	) {}
 }
 
-export class ReportExecutionFailedEvent {
-	readonly type = "report-execution.failed" as const;
+export class ExecutionFailedEvent {
+	readonly type = "execution.failed" as const;
 
 	constructor(
-		readonly reportExecutionId: string,
-		readonly reportDefinitionId: string,
+		readonly executionId: string,
+		readonly definitionId: string,
 		readonly errorMessage: string,
 		readonly occurredAt: Date,
 	) {}

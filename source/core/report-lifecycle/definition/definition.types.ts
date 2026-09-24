@@ -1,6 +1,6 @@
-import type { AggregationType, GroupByDimension, ReportDefinitionStatus } from "./definition.enums";
+import type { AggregationType, DefinitionStatus, GroupByDimension } from "./definition.enums";
 
-export interface ReportDefinitionConfigProps {
+export interface DefinitionConfigProps {
 	name: string;
 	aggregationType: AggregationType;
 	groupBy: GroupByDimension;
@@ -9,16 +9,16 @@ export interface ReportDefinitionConfigProps {
 	cronExpression: string;
 }
 
-export interface CreateReportDefinitionProps extends ReportDefinitionConfigProps {
+export interface CreateDefinitionProps extends DefinitionConfigProps {
 	id: string;
 }
 
-export type EditReportDefinitionProps = ReportDefinitionConfigProps;
+export type EditDefinitionProps = DefinitionConfigProps;
 
-export interface ReportDefinitionSnapshotProps extends ReportDefinitionConfigProps {
+export interface DefinitionSnapshotProps extends DefinitionConfigProps {
 	id: string;
 	version: number;
-	status: ReportDefinitionStatus;
+	status: DefinitionStatus;
 	createdAt: Date;
 	updatedAt: Date;
 }

@@ -1,17 +1,17 @@
-import type { ReportDefinition } from "./definition.aggregate";
-import type { ReportDefinitionStatus } from "./definition.enums";
-import type { ReportDefinitionId } from "./definition.vos";
+import type { Definition } from "./definition.aggregate";
+import type { DefinitionStatus } from "./definition.enums";
+import type { DefinitionId } from "./definition.vos";
 
-export interface ReportDefinitionListFilter {
-	status?: ReportDefinitionStatus;
+export interface DefinitionListFilter {
+	status?: DefinitionStatus;
 }
 
-export interface IReportDefinitionStore {
-	create(definition: ReportDefinition): Promise<void>;
+export interface IDefinitionStore {
+	create(definition: Definition): Promise<void>;
 
-	update(definition: ReportDefinition): Promise<void>;
+	update(definition: Definition): Promise<void>;
 
-	findById(id: ReportDefinitionId): Promise<ReportDefinition | null>;
+	findById(id: DefinitionId): Promise<Definition | null>;
 
-	list(filter?: ReportDefinitionListFilter): Promise<ReportDefinition[]>;
+	list(filter?: DefinitionListFilter): Promise<Definition[]>;
 }

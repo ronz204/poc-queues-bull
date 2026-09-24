@@ -1,4 +1,4 @@
-export interface GenerateSaleTransactionProps {
+export interface GenerateTransactionProps {
 	id: string;
 	productId: string;
 	regionId: string;
@@ -6,7 +6,7 @@ export interface GenerateSaleTransactionProps {
 	occurredAt: Date;
 }
 
-export interface SaleTransactionSnapshotProps {
+export interface TransactionSnapshotProps {
 	id: string;
 	productId: string;
 	regionId: string;
