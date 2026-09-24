@@ -1,8 +1,4 @@
-import {
-	SamplerClientToken,
-	SeedContainerFactory,
-	SeedRunnerToken,
-} from "@drizz/dal/drizzle.dock";
+import { SamplerClientToken, SeedContainerFactory, SeedRunnerToken } from "@drizz/dal/drizzle.dock";
 
 const container = SeedContainerFactory.create();
 console.log("🔌 connecting to Postgres as sampler...");

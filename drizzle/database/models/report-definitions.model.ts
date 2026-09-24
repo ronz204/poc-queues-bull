@@ -36,10 +36,7 @@ export const reportDefinitions = reports.table(
 		cronExpression: pg.text("cron_expression").notNull(),
 		version: pg.integer("version").notNull().default(1),
 		status: reportDefinitionStatus("status").notNull().default("active"),
-		createdAt: pg
-			.timestamp("created_at", { withTimezone: true })
-			.notNull()
-			.defaultNow(),
+		createdAt: pg.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 		updatedAt: pg.timestamp("updated_at", { withTimezone: true }).notNull(),
 	},
 	(table) => [

@@ -11,17 +11,11 @@ export class SalesSeeder {
 	readonly name = "sale_transactions";
 
 	async run(db: Db) {
-		const productIds = (
-			await db.select({ id: products.id }).from(products)
-		).map((row) => row.id);
-		const regionIds = (await db.select({ id: regions.id }).from(regions)).map(
-			(row) => row.id,
-		);
+		const productIds = (await db.select({ id: products.id }).from(products)).map((row) => row.id);
+		const regionIds = (await db.select({ id: regions.id }).from(regions)).map((row) => row.id);
 
 		const now = new Date();
-		const windowStart = new Date(
-			now.getTime() - OCCURRED_AT_WINDOW_DAYS * 24 * 60 * 60 * 1000,
-		);
+		const windowStart = new Date(now.getTime() - OCCURRED_AT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
 		await seed(db, { saleTransactions }).refine((funcs) => ({
 			saleTransactions: {

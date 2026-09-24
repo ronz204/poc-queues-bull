@@ -12,10 +12,7 @@ export const saleTransactions = sales.table(
 		regionId: pg.uuid("region_id").notNull(),
 		amount: pg.numeric("amount", { precision: 12, scale: 2 }).notNull(),
 		occurredAt: pg.timestamp("occurred_at", { withTimezone: true }).notNull(),
-		createdAt: pg
-			.timestamp("created_at", { withTimezone: true })
-			.notNull()
-			.defaultNow(),
+		createdAt: pg.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 	},
 	(table) => [
 		pg.index("sale_transactions_occurred_at_idx").on(table.occurredAt),

@@ -1,11 +1,5 @@
 {
-	"include": [
-		"cmd/**/*",
-		"source/**/*",
-		"drizzle/**/*",
-		"testing/**/*",
-		"**.config.ts"
-	],
+	"include": ["cmd/**/*", "source/**/*", "drizzle/**/*", "testing/**/*", "**.config.ts"],
 	"compilerOptions": {
 		// Environment - Latest JavaScript features
 		"lib": ["ESNext"],

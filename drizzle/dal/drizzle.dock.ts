@@ -23,10 +23,7 @@ export class SeedContainerFactory {
 			.toFactory(() => new DrizzleClient(env.POSTGRES_SAMPLER_URL))
 			.inSingleton();
 
-		container
-			.bind(UnitOfWorkToken)
-			.toClass(DrizzleUnitOfWork, [SamplerClientToken])
-			.inSingleton();
+		container.bind(UnitOfWorkToken).toClass(DrizzleUnitOfWork, [SamplerClientToken]).inSingleton();
 
 		container.bind(ProductsSeederToken).toClass(ProductsSeeder);
 		container.bind(RegionsSeederToken).toClass(RegionsSeeder);
