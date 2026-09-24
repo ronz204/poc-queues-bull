@@ -1,4 +1,5 @@
 export * from "./definition/definition.aggregate";
+export * from "./definition/definition.contracts";
 export * from "./definition/definition.enums";
 export * from "./definition/definition.errors";
 export * from "./definition/definition.events";

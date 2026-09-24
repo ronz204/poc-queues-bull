@@ -118,7 +118,7 @@ export class ReportExecution {
 		return this.with({ status: "pending", errorMessage: null, finishedAt: null });
 	}
 
-	private toSnapshot(): ReportExecutionSnapshotProps {
+	public toSnapshot(): ReportExecutionSnapshotProps {
 		return {
 			id: this.id.value,
 			reportDefinitionId: this.reportDefinitionId,

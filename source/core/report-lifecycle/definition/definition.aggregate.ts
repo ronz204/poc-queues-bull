@@ -82,7 +82,7 @@ export class ReportDefinition {
 		return this.with({ status: "archived", updatedAt: new Date() });
 	}
 
-	private toSnapshot(): ReportDefinitionSnapshotProps {
+	public toSnapshot(): ReportDefinitionSnapshotProps {
 		return {
 			id: this.id.value,
 			name: this.name,
