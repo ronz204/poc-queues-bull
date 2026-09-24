@@ -45,8 +45,8 @@ Non-goals:
 | Field | Type | Notes |
 |---|---|---|
 | `id` | id | |
-| `reportDefinitionId` | id | |
-| `reportDefinitionVersion` | integer | Frozen at trigger time — see Invariants. |
+| `definitionId` | id | |
+| `definitionVersion` | integer | Frozen at trigger time — see Invariants. |
 | `triggerType` | enum: `cron`, `manual` | Part of the idempotency key. |
 | `scheduledFor` | timestamp | The tick this execution corresponds to; part of the idempotency key. |
 | `status` | enum: `pending`, `running`, `succeeded`, `failed` | Lifecycle moves forward only; `failed` may return to `pending`/`running` via a queue-driven retry of the same row. |
@@ -73,7 +73,7 @@ lock:report:{reportId}:token                      # monotonic fencing-token coun
 report:snapshot:{reportId}:v{definitionVersion}    # cached, versioned result
 ```
 
-**Retry configuration:** a failed execution is retried by the job queue up to 3 attempts total (1 initial + 2 retries), with exponential backoff starting at 5s. This is a queue-level job option, not a value read from `report_executions` — see Invariant 13.
+**Retry configuration:** a failed execution is retried by the job queue up to 3 attempts total (1 initial + 2 retries), with exponential backoff starting at 5s. This is a queue-level job option, not a value read from `executions` — see Invariant 13.
 
 ## Invariants
 
@@ -84,8 +84,8 @@ report:snapshot:{reportId}:v{definitionVersion}    # cached, versioned result
 5. A recurring job is registered under a job identity deterministically derived from the report definition's own identity: re-registering an already-registered job is a no-op/update, never a duplicate. Editing the cron expression deregisters the old schedule and registers the new one under that same identity.
 6. A worker must hold the distributed lock for a report, with a valid fencing token, before writing a recomputation's result. A write presenting a fencing token older than one already recorded is rejected outright, regardless of whether the writer still believes it holds the lock.
 7. A manually forced recomputation goes through the same locking mechanism as the automatic cron trigger — the two can never run concurrently against the same report.
-8. Execution identity is idempotent: `(reportDefinitionId, reportDefinitionVersion, triggerType, scheduledFor)` uniquely identifies one attempt. A retry of that same attempt — including an automatic queue-driven backoff retry — updates the existing execution row rather than inserting a new one, since a second insert under an already-existing key is rejected as a duplicate. The queue's own attempt/backoff bookkeeping is never persisted on the execution row itself.
-9. `reportDefinitionVersion` on an execution freezes the definition's version at trigger time. If the definition is edited between retries of the same attempt, the new version is treated as a genuinely different attempt, never a duplicate of the old one.
+8. Execution identity is idempotent: `(definitionId, definitionVersion, triggerType, scheduledFor)` uniquely identifies one attempt. A retry of that same attempt — including an automatic queue-driven backoff retry — updates the existing execution row rather than inserting a new one, since a second insert under an already-existing key is rejected as a duplicate. The queue's own attempt/backoff bookkeeping is never persisted on the execution row itself.
+9. `definitionVersion` on an execution freezes the definition's version at trigger time. If the definition is edited between retries of the same attempt, the new version is treated as a genuinely different attempt, never a duplicate of the old one.
 10. Cache invalidation follows exactly one of two strategies depending on what changed: a definition config change orphans the old cache key passively — a new version simply reads under a new key, and the old key expires on its own TTL; a completed execution overwrites the current version's key actively and immediately, guarded by the fencing-token check.
 11. Reading a report's current result checks the cache first; on a miss it triggers a synchronous recomputation rather than returning an empty or absent result.
 12. A cached read is servable in well under 10ms.

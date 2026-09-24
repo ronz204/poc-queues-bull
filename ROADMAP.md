@@ -29,7 +29,7 @@ Prove the job loop runs at all, with no coordination mechanism yet.
 
 - [x] Local infra via Docker Compose (Postgres + Redis ×2: queues/locks, cache)
 - [x] Hexagonal folder structure scaffolded
-- [x] Synthetic sales dataset seeded via reusable Client/UnitOfWork/DI-backed seeders
+- [x] Synthetic sales dataset seeded via DI-backed seeders inside a single Drizzler transaction
 - [ ] Single hardcoded report definition recomputing on a fixed interval, no lock, no cache
 
 ## 2 — Domain & persistence
