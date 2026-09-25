@@ -1,4 +1,6 @@
-export class DefinitionCreatedEvent {
+import type { DomainEvent } from "@core/shared-kernel";
+
+export class DefinitionCreatedEvent implements DomainEvent {
 	readonly type = "definition.created" as const;
 
 	constructor(
@@ -7,9 +9,13 @@ export class DefinitionCreatedEvent {
 		readonly cronExpression: string,
 		readonly occurredAt: Date,
 	) {}
+
+	get aggregateId(): string {
+		return this.definitionId;
+	}
 }
 
-export class DefinitionChangedEvent {
+export class DefinitionChangedEvent implements DomainEvent {
 	readonly type = "definition.changed" as const;
 
 	constructor(
@@ -18,13 +24,21 @@ export class DefinitionChangedEvent {
 		readonly cronExpression: string,
 		readonly occurredAt: Date,
 	) {}
+
+	get aggregateId(): string {
+		return this.definitionId;
+	}
 }
 
-export class DefinitionArchivedEvent {
+export class DefinitionArchivedEvent implements DomainEvent {
 	readonly type = "definition.archived" as const;
 
 	constructor(
 		readonly definitionId: string,
 		readonly occurredAt: Date,
 	) {}
+
+	get aggregateId(): string {
+		return this.definitionId;
+	}
 }
