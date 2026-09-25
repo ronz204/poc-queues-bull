@@ -1,13 +1,14 @@
-import type { Executor } from "@drizz/helpers/executor.helper";
-import { products } from "@drizz/models/products.model";
-import { regions } from "@drizz/models/regions.model";
-import { transactions } from "@drizz/models/transactions.model";
+import type { Executor } from "@drizz/database/helpers/executor.helper";
+import { products } from "@drizz/database/models/products.model";
+import { regions } from "@drizz/database/models/regions.model";
+import { transactions } from "@drizz/database/models/transactions.model";
+import type { Seeder } from "@drizz/seed.runner";
 import { seed } from "drizzle-seed";
 
 const TRANSACTION_COUNT = 5_000;
 const OCCURRED_AT_WINDOW_DAYS = 90;
 
-export class SalesSeeder {
+export class SalesSeeder implements Seeder {
 	readonly name = "transactions";
 
 	async run(db: Executor) {

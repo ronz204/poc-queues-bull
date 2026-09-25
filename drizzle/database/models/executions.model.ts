@@ -1,5 +1,5 @@
-import { generateId } from "@drizz/helpers/column.helper";
-import { reports } from "@drizz/helpers/existing.helper";
+import { generateId } from "@drizz/database/helpers/column.helper";
+import { reports } from "@drizz/database/helpers/existing.helper";
 import * as pg from "drizzle-orm/pg-core";
 import { definitions } from "./definitions.model";
 
