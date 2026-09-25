@@ -1,4 +1,4 @@
-import { assertUuid, UniqueUUID } from "@core/common-domain";
+import { assertUuid, UniqueUUID } from "@core/shared-kernel";
 
 export class ExecutionId extends UniqueUUID {
 	public static from(value: string): ExecutionId {
