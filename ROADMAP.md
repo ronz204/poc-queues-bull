@@ -41,7 +41,7 @@ Report definitions and executions as real aggregates, backed by real persistence
 - [x] Definition store behind the Drizzler transactional boundary (writes only resolvable inside a run)
 - [x] Definition raises an event on every lifecycle change: created and archived join the existing changed event
 - [x] `reports.outbox` table + outbox store port (shared kernel) and adapter, appending inside the caller's transaction
-- [ ] Application layer scaffolded per bounded context, one folder per use case (schema, handler, errors, plugin), with per-context plugin composition
+- [ ] Application layer scaffolded per bounded context, one folder per use case (schema, handler, errors, plugin, processor), with a per-context dock for handler bindings and per-context plugin composition
 - [ ] Real CRUD for report definitions through the API (create, edit, archive, list), each write recording its event in the outbox in the same transaction
 
 ## 3 — Real scheduling

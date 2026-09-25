@@ -24,4 +24,4 @@ The full policy lives in `.claude/settings.json`. It denies pushing/pulling git 
 
 ## Conventions
 
-Project-wide conventions live as their own rule files under `.claude/rules/` and load automatically when a matching file is touched: bounded-context layering and port placement (`domain-layering.md`), application use-case layering and outbox recording (`usecase-layering.md`), English-only code and runtime strings (`lang-english-only.md`), how to size and scope a delta slice (`when-write-delta.md`), and how this knowledge base itself gets edited (`kb-deltas-routing.md`).
+Project-wide conventions live as their own rule files under `.claude/rules/` and load automatically when a matching file is touched: bounded-context layering and port placement (`domain-layering.md`), application use-case layering, injection, entry points, and outbox recording (`usecase-layering.md`), English-only code and runtime strings (`lang-english-only.md`), how to size and scope a delta slice (`when-write-delta.md`), and how this knowledge base itself gets edited (`kb-deltas-routing.md`).

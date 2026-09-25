@@ -193,6 +193,7 @@ Writes run inside a transactional boundary (the *drizzler*) that owns the connec
 - Nothing that depends on the executor is registered as a singleton. A singleton would capture the transaction of the run that first built it, which is already closed by the next run.
 - Resolution is synchronous, so the connection is validated with an explicit ping during bootstrap, before any run.
 - Nested runs are not supported. An inner run opens an independent transaction, not a nested one, so runs are never nested.
+- Only entry points open runs: the HTTP plugins, the job processors, and the bootstrap seeding. A use-case handler resolved inside a run never receives the drizzler, because anything it opened would be an independent transaction outside the run's atomicity. A use case that needs several commits is the one exception. It is resolved outside any run and opens its runs one after another, never one inside another.
 
 ---
 

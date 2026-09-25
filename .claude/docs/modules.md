@@ -36,9 +36,11 @@ Every use case that changes an aggregate writes the aggregate and its domain eve
 
 **Data shape.** Each use case is one handler class — the entry service a transactional run resolves — whose input and output are declared once as runtime validation schemas, with their static types inferred from those schemas. The schemas validate shape only (types, formats, presence); business invariants stay in the domain layer, so the same rule is never checked in two places.
 
-**HTTP entry.** A use case reachable over HTTP carries its own HTTP-framework plugin beside its handler, and each bounded context composes its use cases' plugins into one plugin the api process mounts. This is a deliberate exception to "only adapters import infrastructure libraries": it keeps a use case's route, schemas, and handler together. The exception stays confined to those plugin files — handlers and schemas never depend on the HTTP framework, and the bounded context's public surface doesn't re-export plugins, so the worker process can use the same handlers without loading any HTTP code. A use case triggered only from the worker has no plugin.
+**Injection.** A handler receives only the stores and ports it orchestrates, never the transactional boundary. The boundary resolves the handler inside a run, so those stores already write through that run's transaction. Each bounded context declares its handlers' DI tokens and bindings in a dock module of its own, which each process loads next to the infrastructure dock. The one exception is a use case that can't hold a single transaction for its whole duration, such as a long recomputation between marking an execution running and recording its terminal state. That handler receives the boundary instead, is resolved outside any run, and opens one sequential run per commit, never nested ones.
 
-**Dependencies.** Depends on the Domain layer and on the Ports below, plus the HTTP framework in its plugins only; nothing here calls back into an adapter.
+**Entry points.** A use case is reached through an entry file beside its handler: an HTTP-framework plugin for the api process, a queue-framework job processor for the worker process, or both. Each entry file receives the transactional boundary, parses the input with the use case's own schema, and opens the run that resolves the handler. Each bounded context composes its plugins into one plugin the api mounts, which also maps errors to HTTP statuses in one place. It composes its processors the same way into one processor the worker registers, which maps errors to retry-or-fail. This is a deliberate exception to "only adapters import infrastructure libraries": it keeps a use case's entry, schemas, and handler together. The exception stays confined to those entry files. Handlers and schemas never depend on either framework, and the bounded context's public surface re-exports neither plugins nor processors, so each process loads only its own framework. A job processor here always starts a use case. Reacting to a domain event is a consumer's job (see Domain event delivery below), not an application-layer processor's.
+
+**Dependencies.** Depends on the Domain layer and on the Ports below, plus the HTTP framework in its plugins and the queue framework in its processors only; nothing here calls back into an adapter.
 
 ## Ports
 
@@ -57,7 +59,7 @@ Every use case that changes an aggregate writes the aggregate and its domain eve
 
 ## Adapters
 
-**Purpose.** The only layer allowed to import a concrete infrastructure library, apart from the application layer's HTTP plugins. Translates between a port's interface and the real technology behind it.
+**Purpose.** The only layer allowed to import a concrete infrastructure library, apart from the application layer's HTTP plugins and job processors. Translates between a port's interface and the real technology behind it.
 
 **Flow.**
 1. The persistence adapters implement the definition, execution, and outbox stores against the relational datastore, always through the transaction of the run that resolved them.

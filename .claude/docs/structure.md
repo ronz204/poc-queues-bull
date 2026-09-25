@@ -33,7 +33,7 @@ HTTP request -> use-case HTTP plugin -> Application-layer use case
                  Postgres
 
 worker process:
-recurring job fires -> Application-layer use case
+recurring job fires -> use-case job processor -> Application-layer use case
                                           |
                      +--------------------+--------------------+
                      |                    |                    |
@@ -46,7 +46,7 @@ domain-events consumers (worker) -> scheduler reconciler -> recurring-job queue
                                  -> cache overwrite      -> Redis (cache)
 ```
 
-A recurring job fires on its own schedule inside the worker process (no inbound HTTP request involved), calls into the same Application-layer use case a manual recomputation would, and follows the same path down through the lock port and store/cache ports.
+A recurring job fires on its own schedule inside the worker process (no inbound HTTP request involved). The use case's job processor, the worker's counterpart of the HTTP plugin, calls into the same Application-layer use case a manual recomputation would, and follows the same path down through the lock port and store/cache ports.
 
 Neither process registers, updates, or removes a recurring job directly from a use case. A use case only records a domain event in the outbox within its own transaction; the relay and the domain-events consumers, both running in the worker process, carry the effect to the scheduler and the cache afterwards. The api process therefore never talks to the queue at all. The lock port and the scheduler port both resolve to the same physical Redis instance (the queues instance, see Stack above) — a separate instance from the one behind the cache port.
 
