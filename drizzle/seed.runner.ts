@@ -1,23 +1,18 @@
-import type { Executor } from "@drizz/helpers/executor.helper";
-import type { ProductsSeeder } from "./products.seeder";
-import type { RegionsSeeder } from "./regions.seeder";
-import type { SalesSeeder } from "./sales.seeder";
+import type { Executor } from "@drizz/database/helpers/executor.helper";
 
-interface Seeder {
+export interface Seeder {
 	readonly name: string;
 	run(db: Executor): Promise<void>;
 }
 
 export class SeedRunner {
-	private readonly seeders: readonly Seeder[];
+	private readonly seeders: Seeder[] = [];
 
-	constructor(
-		private readonly tx: Executor,
-		products: ProductsSeeder,
-		regions: RegionsSeeder,
-		sales: SalesSeeder,
-	) {
-		this.seeders = [products, regions, sales];
+	constructor(private readonly tx: Executor) {}
+
+	add(seeders: Seeder[]): this {
+		this.seeders.push(...seeders);
+		return this;
 	}
 
 	async run() {
