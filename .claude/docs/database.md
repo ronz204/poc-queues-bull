@@ -1,6 +1,6 @@
 # Database
 
-The Postgres schema backing the domain's durable aggregates: the synthetic sales dataset, report definitions, and report executions. Redis-held coordination and cache state (distributed locks, fencing-token counters, the cached report snapshot) is not part of this schema — it never lands in Postgres at all; see the Non-goals section below.
+The Postgres schema backing the domain's durable aggregates: the synthetic sales dataset, report definitions, report executions, and the outbox of domain events they raise. Redis-held coordination and cache state (distributed locks, fencing-token counters, the cached report snapshot) is not part of this schema — it never lands in Postgres at all; see the Non-goals section below.
 
 ---
 
@@ -11,7 +11,9 @@ Two Postgres schemas separate the ingested source dataset from the reporting eng
 | Schema | Holds |
 |---|---|
 | `sales` | products, regions, sale transactions |
-| `reports` | report definitions, report executions, and all five enums below |
+| `reports` | report definitions, report executions, the report-lifecycle outbox, and all five enums below |
+
+A bounded context that emits domain events keeps its outbox table inside its own schema rather than in a shared messaging schema, so its events stay owned by the same context as the aggregates that raise them and would move with it if the context were ever split out. Today only `reports` has one; `sales` gains its own only if sale ingestion starts emitting events.
 
 No foreign key crosses between the two schemas — every reference stays within its own schema, so the split is pure namespacing, not a source of cross-schema join complexity.
 
@@ -130,6 +132,34 @@ reports.executions
 
 `result` is a single `jsonb` column rather than a normalized per-group-key table, because its shape depends on `aggregation_type`/`group_by` and would otherwise need a different table per combination.
 
+#### outbox
+
+```
+reports.outbox
+  id            uuid primary key
+  event_type    text not null
+  aggregate_id  uuid not null
+  payload       jsonb not null
+  occurred_at   timestamptz not null
+  published_at  timestamptz
+```
+
+A row is inserted in the same transaction as the aggregate change that raised the event, which is the whole point of the table: the event exists if and only if the change committed. `published_at` stays null until the relay has handed the row to the domain-events queue. The UUIDv7 `id` doubles as the relay's claim order, so no separate sequence column is needed.
+
+`aggregate_id` has no foreign key: one table holds events from both report definitions and executions, and it's an informational reference for ordering and debugging, not a relationship the database must enforce.
+
+The relay only ever scans pending rows, so a partial index keeps that scan proportional to the backlog rather than to the table's whole history:
+
+```
+create index outbox_pending_idx
+  on reports.outbox (id)
+  where published_at is null;
+```
+
+The relay claims a batch with `select ... where published_at is null order by id limit n for update skip locked`, so concurrent worker instances each claim a disjoint batch instead of blocking on or double-publishing the same rows.
+
+Retention of published rows is not decided yet. `runner` has no `DELETE` privilege, so deleting published rows at runtime would require widening its grant for this table alone. The alternative is a maintenance cleanup run as `sampler`.
+
 ## Persistence invariants
 
 - **No two active report definitions share a name** — enforced by the partial unique index above, scoped to `status = 'active'` so an archived name becomes reusable.
@@ -141,6 +171,7 @@ create unique index executions_idempotency_idx
 ```
 
 `trigger_type` is part of the key so a manually forced recomputation never collides with that same tick's automatic cron run, while two retries of the *same* trigger (same scheduled tick, same trigger type) do collide and the retry is rejected as already-attempted rather than inserted as a second row.
+- **Every domain event is written to its bounded context's outbox in the same transaction as the aggregate change that raised it** — never published outside that transaction, so an event can't exist for a rolled-back change or be lost after a committed one.
 - **No foreign key crosses the `sales`/`reports` schema boundary** — every reference stays within its own schema.
 
 ## Infrastructure

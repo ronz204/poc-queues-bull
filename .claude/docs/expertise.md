@@ -28,3 +28,34 @@ The distinction is about what kind of change triggered the write: a definition c
 ## Idempotency via deterministic identity
 
 In any at-least-once delivery system (retry-on-failure, duplicate delivery, redelivery after a crash), the only reliable way to get exactly-once *effects* on a data store is to derive a stable identifier for "this attempt" from inputs that don't change across retries — never from a value generated fresh at execution time. When that derived identifier already exists in the store, the write is treated as already done rather than duplicated. This pushes deduplication into the data layer (an existence check or a unique constraint on the derived identifier) rather than relying on the delivery system to guarantee single delivery, which no realistic queue actually does.
+
+## Transactional outbox
+
+A change that must update a database *and* notify another system (a queue, a scheduler, a cache) is a dual write: two systems, no transaction spanning both. Publishing inside the database transaction can announce a change that later rolls back; publishing after commit loses the notification if the process dies between the commit and the publish. Neither ordering is safe.
+
+The outbox removes the second write from the critical path. The event is inserted as a row in an outbox table *in the same transaction* as the change itself, so the event exists if and only if the change committed. A separate relay then reads pending rows and delivers them, marking each as published once it's been handed off.
+
+- **Delivery is at-least-once, never exactly-once.** The relay can deliver a row and die before marking it, so the row is delivered again on the next poll. Consumers must therefore be idempotent. Deduplicating on a delivery identifier derived from the outbox row narrows the window, but it only holds for as long as the downstream system remembers that identifier.
+- **Several relay instances can run safely** if each claims rows with row-level locking that skips rows another instance already holds (`for update skip locked`): every instance gets a disjoint batch, with no blocking and no double claim within one polling round.
+- **The relay should only move rows, not run reactions.** A relay that executes reactions itself has to rebuild retries, backoff, poison-message handling, and partial-failure handling across several reactions to the same event. Handing each (event, consumer) pair to a job queue as its own job lets the queue provide all of that, and a failed reaction is retried alone without repeating the ones that succeeded.
+- **Latency is bounded by the polling interval**, which is the price of not needing any change-data-capture infrastructure.
+
+## Level-triggered reconciliation
+
+Consumers of at-least-once events can receive them duplicated and out of order: two events for the same entity processed concurrently can finish in either order, and "apply this event's payload" lets the older one win. Guarding with a stored version number only works when the destination supports an atomic compare-and-set; when it doesn't, the check and the write are two steps another consumer can interleave.
+
+Reconciliation changes what the event means. Instead of "apply this change", it becomes "this entity changed; make the destination match the source of truth":
+
+```
+loop (bounded attempts):
+  desired = read the entity's current state from the source of truth
+  apply desired to the destination            # idempotent upsert/remove
+  check   = read the entity's current state again
+  if check yields the same desired state: done
+  otherwise: loop                             # it changed while we were applying
+attempts exhausted: fail, so the queue retries with backoff
+```
+
+This converges without locks. Take the last write to the destination: whoever made it re-read the source after writing and saw the state it had just applied, or it would have looped. A source change after that check raises its own event, whose consumer writes later, which contradicts it being the last write. So the destination's final state always matches the source's final state, regardless of duplication, ordering, or a consumer stalling mid-write.
+
+The comparison must be over the *derived desired state* (what the destination should look like), not over a single version field, since a change that doesn't bump the version (a status flip, for example) still alters what the destination should hold. This is the same model a Kubernetes controller follows: events only wake the reconciler, and truth is always read from the source.

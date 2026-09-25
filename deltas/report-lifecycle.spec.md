@@ -16,6 +16,7 @@ Owns:
 - Distributed locking with a fencing token around each recomputation, so concurrent workers never compute the same report concurrently in an uncontrolled way.
 - The versioned cache-aside read model for a report's current result, and both invalidation strategies it uses (passive version-in-key on a config change; active fencing-guarded overwrite on a completed execution).
 - Idempotent execution identity, so a retried or redelivered recomputation job never produces a duplicate execution record.
+- Recording every domain event this slice's aggregates raise in the slice's own outbox, and the consumers that react to those events (the recurring-job reconciler and the cache overwrite).
 
 Non-goals:
 
@@ -58,12 +59,25 @@ Non-goals:
 
 **Use cases this slice exposes:**
 
-1. Create a report definition — validated against the config invariants below.
-2. Edit a report definition — bumps `version`, persists the change, triggers a reschedule if the cron expression changed and cache orphaning for the old version.
-3. List report definitions with derived status (last execution, next scheduled run, last success/failure).
-4. Get a report's current result — cache-first; a miss triggers a synchronous recomputation.
-5. Force a manual recomputation — goes through the same lock as the automatic cron trigger.
-6. View a report's execution history — duration, success/failure, which worker ran it.
+1. Create a report definition — validated against the config invariants below; records `definition.created`.
+2. Edit a report definition — bumps `version`, persists the change, records `definition.changed`. The reschedule and the orphaning of the old version's cache key follow from that event, never from the use case directly.
+3. Archive a report definition — terminal; records `definition.archived`, which removes its recurring job.
+4. List report definitions with derived status (last execution, next scheduled run, last success/failure).
+5. Get a report's current result — cache-first; a miss triggers a synchronous recomputation.
+6. Force a manual recomputation — goes through the same lock as the automatic cron trigger.
+7. View a report's execution history — duration, success/failure, which worker ran it.
+
+**Domain events** (recorded in `reports.outbox`, delivered by the outbox relay as one domain-events queue job per consumer):
+
+| Event | Raised by | Carries | Consumed by |
+|---|---|---|---|
+| `definition.created` | Create | definition id, version, cron expression | Recurring-job reconciler |
+| `definition.changed` | Edit | definition id, new version, cron expression | Recurring-job reconciler (cache needs nothing: the old key is orphaned passively) |
+| `definition.archived` | Archive | definition id | Recurring-job reconciler |
+| `execution.succeeded` | A recomputation completing | execution id, definition id and version, snapshot (result + fencing token) | Cache overwrite, fencing-guarded |
+| `execution.failed` | A recomputation failing | execution id, definition id, error message | None yet |
+
+The recurring-job reconciler treats all three definition events alike, as "definition X changed". It never applies a payload. It reads the definition's current state and converges the recurring job to it: an active definition gets a job with its current cron expression, and an archived definition gets none.
 
 **Coordination key shapes:**
 
@@ -81,7 +95,7 @@ report:snapshot:{reportId}:v{definitionVersion}    # cached, versioned result
 2. `version` only ever increases, and is bumped on every config edit — aggregation type, grouping, window, or cron expression.
 3. `cronExpression` must be syntactically valid at the moment a definition is created or edited.
 4. Archiving is terminal: an archived definition can never be reactivated back to active. The only path forward is creating a new definition, optionally reusing the name it freed up.
-5. A recurring job is registered under a job identity deterministically derived from the report definition's own identity: re-registering an already-registered job is a no-op/update, never a duplicate. Editing the cron expression deregisters the old schedule and registers the new one under that same identity.
+5. A recurring job is registered under a job identity deterministically derived from the report definition's own identity: re-registering an already-registered job is a no-op/update, never a duplicate. Each definition's recurring job converges to that definition's current state in Postgres: an active definition has exactly one job with its current cron expression, and an archived one has none. The reconciler reaches this by reading the current state, applying it, and re-reading until the two match. It never applies an event's payload, so duplicated or reordered events can't leave a stale schedule behind.
 6. A worker must hold the distributed lock for a report, with a valid fencing token, before writing a recomputation's result. A write presenting a fencing token older than one already recorded is rejected outright, regardless of whether the writer still believes it holds the lock.
 7. A manually forced recomputation goes through the same locking mechanism as the automatic cron trigger — the two can never run concurrently against the same report.
 8. Execution identity is idempotent: `(definitionId, definitionVersion, triggerType, scheduledFor)` uniquely identifies one attempt. A retry of that same attempt — including an automatic queue-driven backoff retry — updates the existing execution row rather than inserting a new one, since a second insert under an already-existing key is rejected as a duplicate. The queue's own attempt/backoff bookkeeping is never persisted on the execution row itself.
@@ -90,6 +104,8 @@ report:snapshot:{reportId}:v{definitionVersion}    # cached, versioned result
 11. Reading a report's current result checks the cache first; on a miss it triggers a synchronous recomputation rather than returning an empty or absent result.
 12. A cached read is servable in well under 10ms.
 13. A failed execution retries automatically with backoff, driven entirely by the job queue's own retry mechanism up to that mechanism's own bounded attempt limit. Postgres never tracks the attempt count — only the execution row's current status.
+14. Every domain event this slice raises is written to `reports.outbox` in the same transaction as the aggregate change that raised it. No use case publishes to a queue or calls the scheduler or cache ports in reaction to its own write, so an event exists if and only if its change committed.
+15. Event delivery is at-least-once, so every consumer of this slice's events is idempotent and independent of event order. Processing an event twice, or processing an older event after a newer one, leaves the same end state as processing each once in order.
 
 ## Deferred / Open questions
 
@@ -105,6 +121,8 @@ report:snapshot:{reportId}:v{definitionVersion}    # cached, versioned result
 - A retried or duplicated recomputation job — including an automatic backoff retry — never produces a duplicate execution record.
 - A report's execution history (duration, success/failure, which worker ran it) is viewable for debugging.
 - Forcing a manual recomputation never runs concurrently with that report's own automatic cron trigger.
+- Killing a process between a definition change's commit and its effect never leaves an active definition without its recurring job, or an archived one with a job; once the relay and reconciler run, the job matches the definition.
+- Two rapid edits of the same definition processed concurrently, or out of order, leave its recurring job on the latest cron expression.
 
 ## Context (optional)
 
@@ -112,4 +130,4 @@ A worker can hold a lock, stall past its TTL for any reason (a GC pause, schedul
 
 ---
 
-Last updated: 2026-09-22.
+Last updated: 2026-09-24.

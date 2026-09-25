@@ -61,10 +61,17 @@ source/core/
 - The `export` keyword inside a concrete file is the public/private gate, not the barrel — a symbol that must stay internal to the bounded context simply isn't exported from its own file, rather than being filtered out by hand in `index.ts`. This trades barrel-level curation for trusting that gate: once a file exports something, it flows through `export *` automatically, so `index.ts` only changes when a file is added or removed, never because a file gained a new export.
 - Because every sub-slice's exports land in one flat namespace at the barrel, exported symbol names must be unique across the whole bounded context. Names carry their full domain noun (e.g. a definition sub-slice's id type is named after the full concept, not a bare `Id`) rather than relying on the folder for disambiguation, since the folder is invisible to importers.
 
+## Ports
+
+- A port lives in the `contracts` file of the sub-slice it serves, and a port every bounded context shares (such as the outbox store) lives in the shared-kernel bounded context's own sub-slice. Every port stays in core, including ones only the application layer calls (a scheduler, a lock, a cache), because a port belongs to the side that depends on it. Declaring it in core keeps every dependency pointing inward.
+- A port is written in the domain's language (a report, a version, a fencing token), never a technology's (a connection, a queue option, a script). The test for where an interface belongs is who consumes it. If core or the application layer consumes it, it is a port and lives here. If only adapters consume it and it speaks a technology's vocabulary, it is not a port: it lives beside those adapters, and core never declares it. Declaring it here would make core depend on a technology.
+- When a port's signature starts needing a technology's vocabulary, split it into a domain-language port here and an adapter-internal contract in infrastructure, instead of letting the technology leak inward.
+
 ## Aggregate immutability
 
 - An aggregate favors `readonly` public fields over a private field paired with a getter, when the getter would do nothing but return that field — that getter is boilerplate, not encapsulation, since it adds a method without adding any actual guard or transformation.
 - A state-changing operation on an aggregate returns a new instance rather than mutating the receiver in place, so a caller still holding a reference to the pre-change instance keeps a value that stays valid and unaffected by the change, instead of having it silently mutate out from under them.
+- An operation that raises a domain event returns that event alongside the new instance and never publishes it itself. The aggregate can't know whether its change will commit, so only the caller, which owns the transaction, can record the event safely, in the same transaction as the change.
 
 ---
 

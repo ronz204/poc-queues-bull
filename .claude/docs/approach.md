@@ -21,6 +21,7 @@ The base system must support:
 
 - Creating a report definition: name, aggregation type, grouping dimension, time window, and a recomputation cron expression.
 - Editing a report definition: any config change bumps its version, which invalidates the associated cache and reschedules the recomputation job if the cron expression changed.
+- Archiving a report definition: terminal, and removes its recurring recomputation job.
 - Listing report definitions along with their status: last execution, next scheduled run, and last success/failure.
 - Reading a report's current result, served from cache when fresh, or forcing/awaiting a recomputation when it isn't.
 - Forcing a manual recomputation of a report, respecting the locking mechanism so it can never run concurrently with that report's own automatic cron trigger.
@@ -32,12 +33,12 @@ The base system must support:
 Work proceeds in phases, each intended to land as its own commit/branch, building the system up from a bare scheduling loop to the full coordination model:
 
 0. **Scaffolding** — local infra (Postgres + Redis via Docker Compose), the hexagonal folder structure, and a single hardcoded report definition recomputing on a fixed interval with no lock and no cache, just to prove the job loop runs.
-1. **Domain & persistence** — report definitions and report executions modeled as aggregates with their real invariants, backed by real CRUD through the API. No locks, no cache yet.
-2. **Real scheduling** — one recurring job per report definition, rescheduled on cron edits, with a deterministic job identity, safe under multiple concurrently running worker processes.
+1. **Domain & persistence** — report definitions and report executions modeled as aggregates with their real invariants, backed by real CRUD through the API. Every aggregate change records its domain event in its bounded context's outbox within the same transaction, even though nothing consumes those events yet. No locks, no cache yet.
+2. **Real scheduling** — one recurring job per report definition, rescheduled on cron edits, with a deterministic job identity, safe under multiple concurrently running worker processes. Scheduling is driven by the outbox: a polling relay hands recorded events to a domain-events queue, and a reconciling consumer converges each definition's recurring job to the definition's current state, draining whatever backlog accumulated since the previous phase.
 3. **Distributed locking + fencing tokens** — the lock and token mechanism from the pillars table above, hand-rolled first rather than reaching for a locking library, so the mechanism itself is understood before evaluating a library alternative; demonstrated against a simulated worker-failure (zombie) scenario.
 4. **Versioned cache-aside** — the cached read model, served from cache with a synchronous-compute fallback when no snapshot exists yet.
-5. **Event-driven invalidation** — the two invalidation strategies above wired to their respective domain events (a definition change orphans a key passively; an execution result overwrites a key actively, guarded by the fencing token).
-6. **Idempotency & hardening** — deterministic execution identity, retry handling, a synthetic data feed to keep reports computing over live-looking data, and basic observability of which worker executed what.
+5. **Event-driven invalidation** — the two invalidation strategies above wired to their respective domain events (a definition change orphans a key passively; an execution result overwrites a key actively, guarded by the fencing token), with execution events delivered through the same outbox and relay.
+6. **Idempotency & hardening** — deterministic execution identity, retry handling, a synthetic data feed to keep reports computing over live-looking data, basic observability of which worker executed what, and a retention policy for published outbox rows.
 7. **Stretch: cross-report dependencies** — a cascading-recalculation graph across reports that depend on each other's results. Explicitly non-blocking for the base system.
 
 ## Risks

@@ -12,11 +12,11 @@ A recurring analytical reporting engine over a synthetic sales dataset. The poin
 | `.claude/rules/` | Conventions auto-loaded when a matching file is opened/edited, scoped via `paths:` frontmatter |
 | `.claude/skills/` | This project's `archivist`/`specifier`/`sentinel`/`surveyor` knowledge-base pipeline |
 | `.claude/settings.json` | Permission policy — see Permissions below |
-| `deltas/` | Per-slice spec/design files (`<slice>.spec.md`, optional `<slice>.design.md`) — none exist yet; slices get specced on demand via `specifier` as work on them starts |
+| `deltas/` | Per-slice spec/design files (`<slice>.spec.md`, optional `<slice>.design.md`): `report-lifecycle` and `sales-ingestion` today; new slices get specced on demand via `specifier` as work on them starts |
 
 ## Setup & common commands
 
-Not yet established — no package manifest or task runner exists until the scaffolding phase (see `.claude/docs/approach.md`'s Roadmap) lands. Don't guess a command; confirm against the real manifest once it exists.
+Scripts live in `package.json` (Bun): `bun run test`, `bun run lint` / `lint:fix`, `bun run drizz:migrate`, `bun run drizz:seeding`, `bun run dev:service`, `bun run dev:worker`. There's no typecheck script; TypeScript isn't a local dependency, so run it with `bunx -p typescript tsc --noEmit -p .`. Build progress is tracked in `ROADMAP.md`.
 
 ## Permissions
 
@@ -24,4 +24,4 @@ The full policy lives in `.claude/settings.json`. It denies pushing/pulling git 
 
 ## Conventions
 
-Project-wide conventions live as their own rule files under `.claude/rules/` and load automatically when a matching file is touched: bounded-context layering (`core-ddd-layering.md`), English-only code and runtime strings (`lang-english-only.md`), how to size and scope a delta slice (`when-write-delta.md`), and how this knowledge base itself gets edited (`kb-deltas-routing.md`).
+Project-wide conventions live as their own rule files under `.claude/rules/` and load automatically when a matching file is touched: bounded-context layering and port placement (`domain-layering.md`), application use-case layering and outbox recording (`usecase-layering.md`), English-only code and runtime strings (`lang-english-only.md`), how to size and scope a delta slice (`when-write-delta.md`), and how this knowledge base itself gets edited (`kb-deltas-routing.md`).
