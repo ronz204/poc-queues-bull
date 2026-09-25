@@ -6,12 +6,12 @@ This roadmap tracks Cerve's build progress toward its base system, phased from s
 
 ## Overview
 
-**Overall progress: 3 / 26 tasks — 12%**
+**Overall progress: 6 / 27 tasks — 22%**
 
 | # | Step | Status | Progress |
 |---|---|---|---|
 | 1 | [Scaffolding](#1--scaffolding) | 🔄 In progress | 3/4 — 75% |
-| 2 | [Domain & persistence](#2--domain--persistence) | 🔲 Not started | 0/3 — 0% |
+| 2 | [Domain & persistence](#2--domain--persistence) | 🔄 In progress | 3/4 — 75% |
 | 3 | [Real scheduling](#3--real-scheduling) | 🔲 Not started | 0/4 — 0% |
 | 4 | [Distributed locking & fencing tokens](#4--distributed-locking--fencing-tokens) | 🔲 Not started | 0/3 — 0% |
 | 5 | [Versioned cache-aside](#5--versioned-cache-aside) | 🔲 Not started | 0/3 — 0% |
@@ -36,8 +36,9 @@ Prove the job loop runs at all, with no coordination mechanism yet.
 
 Report definitions and executions as real aggregates, backed by real persistence. No locks, no cache yet.
 
-- [ ] Report definition aggregate modeled with its real invariants
-- [ ] Report execution aggregate modeled with its real invariants
+- [x] Report definition aggregate modeled with its real invariants
+- [x] Report execution aggregate modeled with its real invariants
+- [x] Definition store behind the Drizzler transactional boundary (writes only resolvable inside a run)
 - [ ] Real CRUD for report definitions through the API
 
 ## 3 — Real scheduling

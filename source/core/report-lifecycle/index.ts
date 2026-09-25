@@ -6,6 +6,7 @@ export * from "./definition/definition.events";
 export * from "./definition/definition.types";
 export * from "./definition/definition.vos";
 export * from "./execution/execution.aggregate";
+export * from "./execution/execution.contracts";
 export * from "./execution/execution.enums";
 export * from "./execution/execution.errors";
 export * from "./execution/execution.events";
