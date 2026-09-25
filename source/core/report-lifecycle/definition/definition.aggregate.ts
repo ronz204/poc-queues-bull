@@ -1,6 +1,10 @@
 import type { AggregationType, DefinitionStatus, GroupByDimension } from "./definition.enums";
 import { ArchivedDefinitionError } from "./definition.errors";
-import { DefinitionChangedEvent } from "./definition.events";
+import {
+	DefinitionArchivedEvent,
+	DefinitionChangedEvent,
+	DefinitionCreatedEvent,
+} from "./definition.events";
 import type {
 	CreateDefinitionProps,
 	DefinitionSnapshotProps,
@@ -8,10 +12,9 @@ import type {
 } from "./definition.types";
 import { CronExpression, DefinitionId, ReportWindow } from "./definition.vos";
 
-type DefinitionEditResult = {
-	definition: Definition;
-	event: DefinitionChangedEvent;
-};
+type DefinitionCreateResult = { definition: Definition; event: DefinitionCreatedEvent };
+type DefinitionEditResult = { definition: Definition; event: DefinitionChangedEvent };
+type DefinitionArchiveResult = { definition: Definition; event: DefinitionArchivedEvent };
 
 export class Definition {
 	readonly id: DefinitionId;
@@ -38,15 +41,23 @@ export class Definition {
 		this.updatedAt = props.updatedAt;
 	}
 
-	public static create(props: CreateDefinitionProps): Definition {
+	public static create(props: CreateDefinitionProps): DefinitionCreateResult {
 		const now = new Date();
-		return Definition.reconstitute({
+		const definition = Definition.reconstitute({
 			...props,
 			version: 1,
 			status: "active",
 			createdAt: now,
 			updatedAt: now,
 		});
+		const event = new DefinitionCreatedEvent(
+			definition.id.value,
+			definition.version,
+			definition.cronExpression.value,
+			now,
+		);
+
+		return { definition, event };
 	}
 
 	public static reconstitute(snapshot: DefinitionSnapshotProps): Definition {
@@ -74,12 +85,16 @@ export class Definition {
 		return { definition, event };
 	}
 
-	public archive(): Definition {
+	public archive(): DefinitionArchiveResult {
 		if (this.status === "archived") {
 			throw new ArchivedDefinitionError(this.id.value);
 		}
 
-		return this.with({ status: "archived", updatedAt: new Date() });
+		const updatedAt = new Date();
+		const definition = this.with({ status: "archived", updatedAt });
+		const event = new DefinitionArchivedEvent(this.id.value, updatedAt);
+
+		return { definition, event };
 	}
 
 	public toSnapshot(): DefinitionSnapshotProps {

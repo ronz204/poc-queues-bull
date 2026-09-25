@@ -6,12 +6,12 @@ This roadmap tracks Cerve's build progress toward its base system, phased from s
 
 ## Overview
 
-**Overall progress: 6 / 35 tasks — 17%**
+**Overall progress: 7 / 35 tasks — 20%**
 
 | # | Step | Status | Progress |
 |---|---|---|---|
 | 1 | [Scaffolding](#1--scaffolding) | 🔄 In progress | 3/4 — 75% |
-| 2 | [Domain & persistence](#2--domain--persistence) | 🔄 In progress | 3/7 — 43% |
+| 2 | [Domain & persistence](#2--domain--persistence) | 🔄 In progress | 4/7 — 57% |
 | 3 | [Real scheduling](#3--real-scheduling) | 🔲 Not started | 0/7 — 0% |
 | 4 | [Distributed locking & fencing tokens](#4--distributed-locking--fencing-tokens) | 🔲 Not started | 0/3 — 0% |
 | 5 | [Versioned cache-aside](#5--versioned-cache-aside) | 🔲 Not started | 0/3 — 0% |
@@ -39,7 +39,7 @@ Report definitions and executions as real aggregates, backed by real persistence
 - [x] Report definition aggregate modeled with its real invariants
 - [x] Report execution aggregate modeled with its real invariants
 - [x] Definition store behind the Drizzler transactional boundary (writes only resolvable inside a run)
-- [ ] Definition raises an event on every lifecycle change: created and archived join the existing changed event
+- [x] Definition raises an event on every lifecycle change: created and archived join the existing changed event
 - [ ] `reports.outbox` table + outbox store port (shared kernel) and adapter, appending inside the caller's transaction
 - [ ] Application layer scaffolded per bounded context, one folder per use case (schema, handler, errors, plugin), with per-context plugin composition
 - [ ] Real CRUD for report definitions through the API (create, edit, archive, list), each write recording its event in the outbox in the same transaction
