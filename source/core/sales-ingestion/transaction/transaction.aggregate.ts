@@ -30,4 +30,15 @@ export class Transaction {
 	public static reconstitute(snapshot: TransactionSnapshotProps): Transaction {
 		return new Transaction(snapshot);
 	}
+
+	public toSnapshot(): TransactionSnapshotProps {
+		return {
+			id: this.id.value,
+			productId: this.productId.value,
+			regionId: this.regionId.value,
+			amount: this.amount,
+			occurredAt: this.occurredAt,
+			createdAt: this.createdAt,
+		};
+	}
 }

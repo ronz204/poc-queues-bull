@@ -1,46 +1,55 @@
+import type { Page, Range, Slice } from "@core/shared-kernel";
 import type { DefinitionId } from "../definition/definition.vos";
 import type { Execution } from "./execution.aggregate";
-import type { TriggerType } from "./execution.enums";
+import type { ExecutionStatus, TriggerType } from "./execution.enums";
 import type { ExecutionId } from "./execution.vos";
 
-export interface ExecutionIdempotencyKey {
-	definitionId: DefinitionId;
-	definitionVersion: number;
-	triggerType: TriggerType;
-	scheduledFor: Date;
+export interface ExecutionFilter {
+	readonly definitionId: DefinitionId;
+	readonly status?: ExecutionStatus;
+	readonly triggerType?: TriggerType;
+	readonly scheduledFor?: Range<Date>;
 }
 
-// Keyset position in a definition's history: scheduledFor alone isn't unique (a cron and a
-// manual run, or two versions, can share a tick), so the id breaks the tie.
 export interface ExecutionCursor {
-	scheduledFor: Date;
-	id: ExecutionId;
+	readonly scheduledFor: Date;
+	readonly id: ExecutionId;
 }
 
-export interface ExecutionPage {
-	limit: number;
-	after?: ExecutionCursor;
+export interface ExecutionDigest {
+	readonly id: ExecutionId;
+	readonly status: ExecutionStatus;
+	readonly triggerType: TriggerType;
+	readonly definitionVersion: number;
+	readonly scheduledFor: Date;
+	readonly startedAt: Date | null;
+	readonly finishedAt: Date | null;
+	readonly workerId: string | null;
+	readonly errorMessage: string | null;
 }
 
 export interface ExecutionSummary {
-	last: Execution | null;
-	lastSucceeded: Execution | null;
-	lastFailed: Execution | null;
+	readonly last: ExecutionDigest | null;
+	readonly lastSucceeded: ExecutionDigest | null;
+	readonly lastFailed: ExecutionDigest | null;
 }
 
-export interface IExecutionStore {
-	create(execution: Execution): Promise<void>;
+export interface ExecutionCreation {
+	readonly execution: Execution;
+	readonly created: boolean;
+}
+
+export interface IExecutionRepository {
+	createIfAbsent(execution: Execution): Promise<ExecutionCreation>;
 
 	update(execution: Execution): Promise<void>;
 
 	findById(id: ExecutionId): Promise<Execution | null>;
 
-	findByIdempotencyKey(key: ExecutionIdempotencyKey): Promise<Execution | null>;
+	list(
+		filter: ExecutionFilter,
+		page: Page<ExecutionCursor>,
+	): Promise<Slice<ExecutionDigest, ExecutionCursor>>;
 
-	// Newest first, ordered by (scheduledFor, id) descending.
-	listByDefinition(definitionId: DefinitionId, page: ExecutionPage): Promise<Execution[]>;
-
-	// Keyed by the definition id's string value; every requested id gets an entry, empty when
-	// the definition has never run.
 	summarizeByDefinitions(definitionIds: DefinitionId[]): Promise<Map<string, ExecutionSummary>>;
 }
