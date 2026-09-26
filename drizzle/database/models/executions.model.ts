@@ -1,5 +1,5 @@
-import { generateId } from "@drizz/database/helpers/column.helper";
-import { reports } from "@drizz/database/helpers/existing.helper";
+import { generateId } from "@db/helpers/column.helper";
+import { reports } from "@db/helpers/existing.helper";
 import * as pg from "drizzle-orm/pg-core";
 import { definitions } from "./definitions.model";
 
@@ -11,6 +11,8 @@ export const executionStatus = reports.enum("execution_status", [
 	"succeeded",
 	"failed",
 ]);
+
+export const EXECUTIONS_IDEMPOTENCY_IDX = "executions_idempotency_idx";
 
 export const executions = reports.table(
 	"executions",
@@ -31,7 +33,7 @@ export const executions = reports.table(
 	},
 	(table) => [
 		pg
-			.uniqueIndex("executions_idempotency_idx")
+			.uniqueIndex(EXECUTIONS_IDEMPOTENCY_IDX)
 			.on(table.definitionId, table.definitionVersion, table.triggerType, table.scheduledFor),
 		pg
 			.foreignKey({

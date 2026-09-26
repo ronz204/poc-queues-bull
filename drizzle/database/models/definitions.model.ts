@@ -1,5 +1,5 @@
-import { generateId } from "@drizz/database/helpers/column.helper";
-import { reports } from "@drizz/database/helpers/existing.helper";
+import { generateId } from "@db/helpers/column.helper";
+import { reports } from "@db/helpers/existing.helper";
 import { sql } from "drizzle-orm";
 import * as pg from "drizzle-orm/pg-core";
 
@@ -18,6 +18,8 @@ export const groupByDimension = reports.enum("group_by_dimension", [
 	"week",
 	"month",
 ]);
+
+export const DEFINITIONS_ACTIVE_NAME_IDX = "definitions_active_name_idx";
 
 export const definitionStatus = reports.enum("definition_status", ["active", "archived"]);
 
@@ -38,7 +40,7 @@ export const definitions = reports.table(
 	},
 	(table) => [
 		pg
-			.uniqueIndex("definitions_active_name_idx")
+			.uniqueIndex(DEFINITIONS_ACTIVE_NAME_IDX)
 			.on(table.name)
 			.where(sql`${table.status} = 'active'`),
 	],

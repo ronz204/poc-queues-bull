@@ -5,11 +5,11 @@ export default defineConfig({
 		alias: {
 			"@env": "./source/env.ts",
 			"@dock": "./source/dock.ts",
-			"@drizz": "./drizzle",
 			"@tests": "./testing",
 			"@app": "./source/app",
 			"@core": "./source/core",
 			"@infra": "./source/infra",
+			"@db": "./drizzle/database",
 		},
 	},
 	test: {
