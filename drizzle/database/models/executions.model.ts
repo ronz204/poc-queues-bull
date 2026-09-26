@@ -36,6 +36,17 @@ export const executions = reports.table(
 			.uniqueIndex(EXECUTIONS_IDEMPOTENCY_IDX)
 			.on(table.definitionId, table.definitionVersion, table.triggerType, table.scheduledFor),
 		pg
+			.index("executions_history_idx")
+			.on(table.definitionId, table.scheduledFor.desc().nullsFirst(), table.id.desc().nullsFirst()),
+		pg
+			.index("executions_status_history_idx")
+			.on(
+				table.definitionId,
+				table.status,
+				table.scheduledFor.desc().nullsFirst(),
+				table.id.desc().nullsFirst(),
+			),
+		pg
 			.foreignKey({
 				name: "executions_definition_id_fk",
 				columns: [table.definitionId],

@@ -4,6 +4,6 @@ export interface DomainEvent {
 	readonly occurredAt: Date;
 }
 
-export interface IOutboxStore {
+export interface IOutboxerRepository {
 	append(event: DomainEvent): Promise<void>;
 }

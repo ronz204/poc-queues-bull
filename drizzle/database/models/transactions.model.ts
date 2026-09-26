@@ -10,7 +10,7 @@ export const transactions = sales.table(
 		id: pg.uuid("id").primaryKey().$defaultFn(generateId),
 		productId: pg.uuid("product_id").notNull(),
 		regionId: pg.uuid("region_id").notNull(),
-		amount: pg.numeric("amount", { precision: 12, scale: 2 }).notNull(),
+		amount: pg.numeric("amount", { precision: 12, scale: 2, mode: "number" }).notNull(),
 		occurredAt: pg.timestamp("occurred_at", { withTimezone: true }).notNull(),
 		createdAt: pg.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 	},

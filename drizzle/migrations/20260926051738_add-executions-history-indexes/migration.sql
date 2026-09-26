@@ -1,0 +1,2 @@
+CREATE INDEX "executions_history_idx" ON "reports"."executions" ("definition_id","scheduled_for" DESC,"id" DESC);--> statement-breakpoint
+CREATE INDEX "executions_status_history_idx" ON "reports"."executions" ("definition_id","status","scheduled_for" DESC,"id" DESC);
