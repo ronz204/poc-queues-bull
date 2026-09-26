@@ -27,8 +27,6 @@ export class ArchivedDefinitionError extends Error {
 	}
 }
 
-// Never thrown by the aggregate itself: uniqueness among active names can only be checked
-// against other aggregates, so the application layer/repository raises this, not this slice.
 export class DuplicateDefinitionNameError extends Error {
 	constructor(readonly definitionName: string) {
 		super(`an active report definition named "${definitionName}" already exists`);

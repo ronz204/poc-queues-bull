@@ -7,8 +7,6 @@ export class TransactionId extends UniqueUUID {
 	}
 }
 
-// Referenced here only as a foreign key this slice reads, not a concept it owns —
-// see sales-ingestion.spec.md's Non-goals.
 export class ProductId extends UniqueUUID {
 	public static from(value: string): ProductId {
 		assertUuid(value, "ProductId");

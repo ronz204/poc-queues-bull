@@ -7,8 +7,6 @@ export class ExecutionId extends UniqueUUID {
 	}
 }
 
-// The computed result's shape depends on the owning definition's aggregationType/groupBy
-// (see definition.enums.ts) — left as unknown here since no consumer decodes it yet.
 export class ReportSnapshot {
 	private constructor(
 		readonly result: unknown,

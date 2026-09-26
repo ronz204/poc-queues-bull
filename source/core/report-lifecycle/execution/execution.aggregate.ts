@@ -108,8 +108,6 @@ export class Execution {
 		return { execution, event };
 	}
 
-	// A queue-driven backoff retry of the same attempt — see report-lifecycle.spec.md Invariant 13.
-	// Never adjusts definitionVersion/scheduledFor/triggerType: those stay frozen from trigger().
 	public retry(): Execution {
 		if (this.status !== "failed") {
 			throw new InvalidExecutionTransitionError(this.status, "pending");
