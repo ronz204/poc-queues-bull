@@ -1,4 +1,5 @@
-import type { Executor } from "@drizz/helpers/executor.helper";
+import type { Executor } from "@drizz/database/helpers/executor.helper";
+import { translateViolation } from "@drizz/database/helpers/violation.helper";
 import { type Container, type Token, token } from "dockdi";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
@@ -17,12 +18,16 @@ export class Drizzler {
 		this.db = drizzle({ client: this.sql });
 	}
 
-	run<S, R>(entry: Token<S>, work: (service: S) => Promise<R>): Promise<R> {
-		return this.db.transaction((tx) => {
-			const scope = this.container.scope();
-			scope.bind(TxToken).toValue(tx);
-			return work(scope.resolve(entry));
-		});
+	async run<S, R>(entry: Token<S>, work: (service: S) => Promise<R>): Promise<R> {
+		try {
+			return await this.db.transaction((tx) => {
+				const scope = this.container.scope();
+				scope.bind(TxToken).toValue(tx);
+				return work(scope.resolve(entry));
+			});
+		} catch (error) {
+			throw translateViolation(error);
+		}
 	}
 
 	close() {
