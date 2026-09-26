@@ -1,19 +1,29 @@
-import { ProductsSeeder } from "@drizz/database/seeders/products.seeder";
-import { RegionsSeeder } from "@drizz/database/seeders/regions.seeder";
-import { SalesSeeder } from "@drizz/database/seeders/sales.seeder";
-import { Drizzler, TxToken } from "@drizz/drizzle.wrap";
-import { SeedRunner } from "@drizz/seed.runner";
+import type { Seeder } from "@db/helpers/seeder.helper";
+import { ProductsSeeder } from "@db/seeders/products.seeder";
+import { RegionsSeeder } from "@db/seeders/regions.seeder";
+import { SalesSeeder } from "@db/seeders/sales.seeder";
 import { env } from "@env";
+import { Drizzler, TxToken } from "@infra/dal/dal.entrypoint";
 import { Container } from "dockdi";
+
+const seeders: Seeder[] = [new ProductsSeeder(), new RegionsSeeder(), new SalesSeeder()];
 
 const drizzler = new Drizzler(new Container(), env.POSTGRES_SAMPLER_URL);
 
 try {
 	const startedAt = performance.now();
-	await drizzler.run(TxToken, (tx) =>
-		new SeedRunner(tx).add([new ProductsSeeder(), new RegionsSeeder(), new SalesSeeder()]).run(),
-	);
-	console.log(`🏁 done in ${Math.round(performance.now() - startedAt)}ms`);
+	console.log(`🌱 seeding ${seeders.length} tables...`);
+
+	await drizzler.run(TxToken, async (tx) => {
+		for (const seeder of seeders) {
+			const seederStartedAt = performance.now();
+			process.stdout.write(`   → ${seeder.name}... `);
+			await seeder.run(tx);
+			console.log(`done (${Math.round(performance.now() - seederStartedAt)}ms)`);
+		}
+	});
+
+	console.log(`🏁 seeding complete in ${Math.round(performance.now() - startedAt)}ms`);
 } catch (error) {
 	console.error("❌ seeding failed:", error);
 	process.exitCode = 1;

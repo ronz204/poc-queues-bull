@@ -1,6 +1,6 @@
-import type { Executor } from "@drizz/database/helpers/executor.helper";
-import { regions } from "@drizz/database/models/regions.model";
-import type { Seeder } from "@drizz/seed.runner";
+import type { Executor } from "@db/helpers/executor.helper";
+import type { Seeder } from "@db/helpers/seeder.helper";
+import { regions } from "@db/models/regions.model";
 import { seed } from "drizzle-seed";
 import { REGION_NAMES } from "./regions.data";
 

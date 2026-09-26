@@ -1,8 +1,8 @@
-import type { Executor } from "@drizz/database/helpers/executor.helper";
-import { products } from "@drizz/database/models/products.model";
-import { regions } from "@drizz/database/models/regions.model";
-import { transactions } from "@drizz/database/models/transactions.model";
-import type { Seeder } from "@drizz/seed.runner";
+import type { Executor } from "@db/helpers/executor.helper";
+import type { Seeder } from "@db/helpers/seeder.helper";
+import { products } from "@db/models/products.model";
+import { regions } from "@db/models/regions.model";
+import { transactions } from "@db/models/transactions.model";
 import { seed } from "drizzle-seed";
 
 const TRANSACTION_COUNT = 5_000;

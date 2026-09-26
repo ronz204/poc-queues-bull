@@ -1,6 +1,6 @@
-import type { Executor } from "@drizz/database/helpers/executor.helper";
-import { products } from "@drizz/database/models/products.model";
-import type { Seeder } from "@drizz/seed.runner";
+import type { Executor } from "@db/helpers/executor.helper";
+import type { Seeder } from "@db/helpers/seeder.helper";
+import { products } from "@db/models/products.model";
 import { seed } from "drizzle-seed";
 import { PRODUCT_NAMES } from "./products.data";
 
