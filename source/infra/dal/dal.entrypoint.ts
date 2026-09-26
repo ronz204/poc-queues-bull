@@ -1,8 +1,8 @@
-import type { Executor } from "@drizz/database/helpers/executor.helper";
-import { translateViolation } from "@drizz/database/helpers/violation.helper";
+import type { Executor } from "@db/helpers/executor.helper";
 import { type Container, type Token, token } from "dockdi";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { toPersistenceError } from "./dal.classifier";
 
 export const TxToken = token<Executor>("Tx");
 
@@ -26,7 +26,7 @@ export class Drizzler {
 				return work(scope.resolve(entry));
 			});
 		} catch (error) {
-			throw translateViolation(error);
+			throw toPersistenceError(error);
 		}
 	}
 
