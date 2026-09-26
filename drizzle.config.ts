@@ -5,7 +5,7 @@ export default defineConfig({
 	verbose: true,
 	dialect: "postgresql",
 	out: "./drizzle/migrations/",
-	schema: "./drizzle/models/*.model.ts",
+	schema: "./drizzle/database/models/*.model.ts",
 	migrations: { schema: "drizzle", table: "migrations" },
 	dbCredentials: { url: process.env.POSTGRES_SAMPLER_URL! },
 });
